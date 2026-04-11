@@ -1,116 +1,111 @@
+require('dotenv').config(); 
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs'); 
 const axios = require('axios'); 
-const fetchPolicies = require('./scraper'); // 🆕 Imported your scraper!
+const pdfParse = require('pdf-parse'); 
+// 🚨 Notice we deleted the GoogleGenerativeAI import. We don't need it anymore.
+const fetchPolicies = require('./scraper');
 
-// Initialize the Express App
 const app = express();
 const PORT = 5000;
 
-// Middleware
 app.use(cors()); 
 app.use(express.json()); 
 
-// 📁 BULLETPROOF DIRECTORY CREATOR
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
-  console.log(`[📁] Created uploads directory at ${uploadDir}`);
 }
 
-// 📁 Configure Multer (The File Catcher)
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir); 
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({ storage: storage });
 
-
-// 🚀 The Core API Route: Catching the File from React
-app.post('/api/analyze', upload.single('document'), (req, res) => {
+// 🚀 THE CORE AI ROUTE
+app.post('/api/analyze', upload.single('document'), async (req, res) => {
   try {
     const file = req.file;
+    const docType = req.body.docType; 
 
-    if (!file) {
-      return res.status(400).json({ error: 'No document uploaded' });
-    }
+    if (!file) return res.status(400).json({ error: 'No document uploaded' });
 
-    console.log(`\n[🤖 AI ENGINE] Incoming Request!`);
-    console.log(`[📁 Saved As]: ${file.filename}`);
+    console.log(`\n[🤖 AI ENGINE] Processing ${docType}...`);
 
-    res.json({
-      message: 'File successfully received by LegalEase Backend!',
-      fileName: file.originalname,
-      status: 'success'
-    });
+    // 1. Read PDF
+    const dataBuffer = fs.readFileSync(file.path);
+    const pdfData = await pdfParse(dataBuffer);
+    const extractedText = pdfData.text;
 
-  } catch (error) {
-    console.error("Analysis Error:", error);
-    res.status(500).json({ error: 'Server error during upload' });
-  }
-});
+    // 2. Set up the STRICT CLAUSE ONLY Gemini Prompt
+    const prompt = `
+      You are an expert legal AI assistant. You are analyzing a ${docType}.
+      Your ONLY job is to extract risky, notable, or unfair clauses.
+      
+      Return ONLY a valid JSON object with the following exact structure. Do not include markdown formatting.
+      {
+        "score": <number between 0 and 100 representing safety>,
+        "scoreColor": "<if score < 50 use 'text-red-500', if 50-79 use 'text-yellow-500', if 80+ use 'text-green-500'>",
+        "clauses": [
+          {
+            "title": "<Name of the risky, unfair, or notable clause>",
+            "titleColor": "<text-red-800 or text-yellow-800>",
+            "bgColor": "<bg-red-50 or bg-yellow-50>",
+            "borderColor": "<border-red-200 or border-yellow-200>",
+            "text": "<The exact text extracted from the document>",
+            "suggestion": "<Your detailed legal recommendation on how the user should fix this specific clause>"
+          }
+        ]
+      }
 
+      Document Text:
+      ${extractedText}
+    `;
 
-// 🔐 NEW ROUTE: Verify Google Authentication
-app.post('/api/auth/google', async (req, res) => {
-  try {
-    const { accessToken } = req.body;
+    console.log(`[🧠 GEMINI] Asking AI to analyze (Direct REST API Bypass)...`);
 
-    if (!accessToken) {
-      return res.status(400).json({ error: "No access token provided" });
-    }
-
-    const googleResponse = await axios.get(
-      'https://www.googleapis.com/oauth2/v3/userinfo',
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-
-    const userProfile = googleResponse.data;
+    // 3. Call Gemini (THE NUCLEAR OPTION - BYPASSING THE BUGGY SDK)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
     
-    console.log(`\n[🔐 AUTH] New Google Login!`);
-    console.log(`Name: ${userProfile.name}`);
-    console.log(`Email: ${userProfile.email}`);
-
-    res.json({
-      message: "Successfully authenticated with Google",
-      name: userProfile.name,
-      email: userProfile.email,
-      picture: userProfile.picture
+    const geminiResponse = await axios.post(url, {
+      contents: [{ parts: [{ text: prompt }] }]
+    }, {
+      headers: { 'Content-Type': 'application/json' }
     });
 
+    const aiResponseText = geminiResponse.data.candidates[0].content.parts[0].text;
+
+    // 4. Parse JSON safely
+    const jsonMatch = aiResponseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("No JSON found");
+    const aiAnalysis = JSON.parse(jsonMatch[0]);
+
+    console.log(`[✅ SUCCESS] Analysis complete!`);
+    
+    // Send REAL data to frontend
+    res.json({ status: 'success', analysis: aiAnalysis });
+
   } catch (error) {
-    console.error("Google Auth Error:", error.message);
-    res.status(500).json({ error: "Failed to authenticate with Google" });
+    // 🚨 This will print the EXACT error Google sends back if it fails
+    console.error("\n🔥 Analysis Error:", error.response ? JSON.stringify(error.response.data, null, 2) : error.message);
+    res.status(500).json({ error: 'Server error during AI analysis' });
   }
 });
-
-
-// 📜 NEW ROUTE: Fetch Government Policies via Scraper
+// 📜 POLICIES ROUTE: Fetch Government Policies via Scraper
 app.get('/api/policies', async (req, res) => {
   try {
     console.log(`\n[📜 SCRAPER] React requested policies... scraping PRS India...`);
     const policies = await fetchPolicies();
     
-    // Send the scraped array of policies back to the React frontend
     res.json(policies);
-    console.log(`[📜 SCRAPER] Successfully sent ${policies.length} policies to frontend.`);
+    console.log(`[✅ SCRAPER] Successfully sent ${policies.length} policies to frontend.`);
   } catch (error) {
     console.error("Error fetching policies:", error);
     res.status(500).json({ error: "Failed to fetch policies" });
   }
 });
-
-
-// Start the Server
-app.listen(PORT, () => {
-  console.log(`\n=========================================`);
-  console.log(`🚀 LegalEase Backend running on port ${PORT}`);
-  console.log(`=========================================\n`);
-});
+app.listen(PORT, () => console.log(`🚀 LegalEase Backend running on port ${PORT}`));

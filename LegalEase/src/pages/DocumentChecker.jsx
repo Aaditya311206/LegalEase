@@ -1,27 +1,30 @@
 import React, { useState } from 'react';
 import DocumentUploader from '../components/features/DocumentUploader';
 import AnalysisResults from '../components/features/AnalysisResults';
-import { FileSearch, Loader2 } from 'lucide-react';
+import { FileSearch, Loader2, AlertCircle } from 'lucide-react';
 
 export default function DocumentChecker() {
   const [file, setFile] = useState(null);
-  // 1. 🆕 Added state to catch the document type from the uploader
   const [docType, setDocType] = useState(''); 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+  
+  // 1. 🚨 NEW: We MUST have a state to save the AI's data!
+  const [aiData, setAiData] = useState(null);
+  const [serverError, setServerError] = useState(null);
 
-  // 2. 🆕 Updated to catch BOTH the file and the selected type
   const handleFileUpload = (uploadedFile, selectedDocType) => {
     setFile(uploadedFile);
     setDocType(selectedDocType); 
+    setServerError(null);
   };
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
+    setServerError(null);
     
     const formData = new FormData();
     formData.append('document', file);
-    // 3. 🆕 Send the document type to the backend for later AI use
     formData.append('docType', docType); 
 
     try {
@@ -33,18 +36,28 @@ export default function DocumentChecker() {
       const data = await response.json();
       console.log("Backend says:", data); 
 
-      setIsAnalyzing(false);
-      setAnalysisComplete(true);
+      if (data.status === 'success') {
+        // 2. 🚨 NEW: Save the AI's brain output so we can pass it down!
+        setAiData(data.analysis);
+        setAnalysisComplete(true);
+      } else {
+        // If the backend sends an error, catch it!
+        setServerError(data.error || "An unknown error occurred on the server.");
+      }
     } catch (error) {
       console.error("Error connecting to backend:", error);
+      setServerError("Failed to connect to the backend server. Is it running?");
+    } finally {
       setIsAnalyzing(false);
     }
   };
 
   const handleReset = () => {
     setFile(null);
-    setDocType(''); // Clear it on reset
+    setDocType(''); 
     setAnalysisComplete(false);
+    setAiData(null);
+    setServerError(null);
   };
 
   return (
@@ -73,13 +86,20 @@ export default function DocumentChecker() {
         {file && !isAnalyzing && !analysisComplete && (
           <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center animate-fade-in">
             <h3 className="text-xl font-semibold text-gray-800">File Selected: {file.name}</h3>
-            {/* 🆕 Show the user what type they selected */}
             <p className="text-primary font-medium mt-1">Type: {docType}</p> 
             <p className="text-gray-500 mt-2">Size: {(file.size / 1024 / 1024).toFixed(2)} MB</p>
             
+            {/* Show Server Error if it crashed */}
+            {serverError && (
+               <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-center justify-center gap-2">
+                 <AlertCircle className="w-5 h-5" />
+                 <span className="font-medium">{serverError}</span>
+               </div>
+            )}
+
             <div className="mt-6 flex justify-center space-x-4">
               <button 
-                onClick={() => setFile(null)}
+                onClick={handleReset}
                 className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
               >
                 Cancel
@@ -104,9 +124,9 @@ export default function DocumentChecker() {
         )}
 
         {/* State 4: Results Dashboard */}
-        {analysisComplete && (
-          // 4. 🆕 Passed docType down into AnalysisResults!
-          <AnalysisResults file={file} docType={docType} onReset={handleReset} />
+        {analysisComplete && aiData && (
+          // 3. 🚨 NEW: We actually pass the data variable into the component!
+          <AnalysisResults file={file} docType={docType} data={aiData} onReset={handleReset} />
         )}
 
       </div>
