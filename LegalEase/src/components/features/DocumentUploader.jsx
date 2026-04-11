@@ -3,10 +3,21 @@ import { useDropzone } from 'react-dropzone';
 import { UploadCloud, AlertCircle, FileSignature } from 'lucide-react';
 
 export default function DocumentUploader({ onFileUpload }) {
-  const [docType, setDocType] = useState('Rent Agreement');
+  // 1. Start empty so nothing is pre-selected!
+  const [docType, setDocType] = useState('');
+  
+  // 2. State to show the warning if they forget
+  const [showWarning, setShowWarning] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
+    // 3. Block the upload if they haven't picked a type
+    if (!docType) {
+      setShowWarning(true);
+      return;
+    }
+
     if (acceptedFiles.length > 0) {
+      setShowWarning(false);
       onFileUpload(acceptedFiles[0], docType);
     }
   }, [onFileUpload, docType]);
@@ -33,9 +44,16 @@ export default function DocumentUploader({ onFileUpload }) {
 
         <select
           value={docType}
-          onChange={(e) => setDocType(e.target.value)}
-          className="w-full p-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-700 font-medium cursor-pointer"
+          onChange={(e) => {
+            setDocType(e.target.value);
+            setShowWarning(false); // Hide warning once they pick something
+          }}
+          className={`w-full p-3 bg-white border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-gray-700 font-medium cursor-pointer ${
+            showWarning ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary'
+          }`}
         >
+          {/* 🆕 The new default placeholder option */}
+          <option value="" disabled>-- Please select a document type --</option>
 
           {/* Property */}
           <option disabled>──────── Property & Rental ────────</option>
@@ -67,33 +85,54 @@ export default function DocumentUploader({ onFileUpload }) {
           <option disabled>──────── Other ────────</option>
           <option value="Other">Other</option>
         </select>
+
+        {/* 🆕 Warning Message if they try to drop too early */}
+        {showWarning && (
+          <p className="text-red-500 text-sm mt-2 font-medium flex items-center gap-1 animate-fade-in">
+            <AlertCircle className="w-4 h-4" />
+            You must select a document type before uploading.
+          </p>
+        )}
       </div>
 
       {/* Drag & Drop Zone */}
       <div
         {...getRootProps()}
-        className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-200 ease-in-out
-          ${isDragActive ? 'border-primary bg-red-50' : 'border-gray-300 hover:border-primary-light hover:bg-gray-50'}
-          ${isDragReject ? 'border-red-500 bg-red-50' : ''}
+        className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-200 ease-in-out
+          ${!docType ? 'cursor-not-allowed opacity-60 bg-gray-50 border-gray-200' : 'cursor-pointer hover:bg-gray-50 hover:border-primary-light'}
+          ${isDragActive && docType ? 'border-primary bg-red-50' : ''}
+          ${(isDragReject || showWarning) ? 'border-red-500 bg-red-50' : 'border-gray-300'}
         `}
       >
-        <input {...getInputProps()} />
+        {/* Disable the actual hidden input if no type is selected */}
+        <input {...getInputProps()} disabled={!docType} />
 
         <div className="flex flex-col items-center justify-center space-y-4">
-          <div className={`p-4 rounded-full ${isDragActive ? 'bg-primary-light text-white' : 'bg-gray-100 text-gray-500'}`}>
+          <div className={`p-4 rounded-full ${isDragActive && docType ? 'bg-primary-light text-white' : 'bg-gray-100 text-gray-500'}`}>
             <UploadCloud className="w-10 h-10" />
           </div>
 
           <div>
             <p className="text-lg font-semibold text-gray-700">
-              {isDragActive ? "Drop the document here..." : "Drag & drop your legal document"}
+              {!docType 
+                ? "Select a document type to enable upload" 
+                : isDragActive 
+                ? "Drop the document here..." 
+                : "Drag & drop your legal document"}
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Supports PDF, JPG, and PNG (Max 10MB)
             </p>
           </div>
 
-          <button className="mt-4 px-6 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-gray-700 font-medium hover:bg-gray-50 hover:text-primary transition-colors">
+          <button 
+            disabled={!docType}
+            className={`mt-4 px-6 py-2 border rounded-lg shadow-sm font-medium transition-colors ${
+              !docType 
+                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-primary'
+            }`}
+          >
             Browse Files
           </button>
         </div>
