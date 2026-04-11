@@ -9,7 +9,6 @@ export default function DocumentChecker() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
   
-  // 1. 🚨 NEW: We MUST have a state to save the AI's data!
   const [aiData, setAiData] = useState(null);
   const [serverError, setServerError] = useState(null);
 
@@ -37,11 +36,22 @@ export default function DocumentChecker() {
       console.log("Backend says:", data); 
 
       if (data.status === 'success') {
-        // 2. 🚨 NEW: Save the AI's brain output so we can pass it down!
         setAiData(data.analysis);
         setAnalysisComplete(true);
+        
+        // 🚨 NEW: Save the result safely in the user's browser (localStorage)
+        const newHistoryItem = {
+          id: Date.now(),
+          name: file.name,
+          type: docType,
+          date: new Date().toLocaleDateString(),
+          score: data.analysis.score
+        };
+        
+        const existingHistory = JSON.parse(localStorage.getItem('legalEaseHistory') || '[]');
+        localStorage.setItem('legalEaseHistory', JSON.stringify([newHistoryItem, ...existingHistory]));
+        
       } else {
-        // If the backend sends an error, catch it!
         setServerError(data.error || "An unknown error occurred on the server.");
       }
     } catch (error) {
@@ -125,7 +135,6 @@ export default function DocumentChecker() {
 
         {/* State 4: Results Dashboard */}
         {analysisComplete && aiData && (
-          // 3. 🚨 NEW: We actually pass the data variable into the component!
           <AnalysisResults file={file} docType={docType} data={aiData} onReset={handleReset} />
         )}
 

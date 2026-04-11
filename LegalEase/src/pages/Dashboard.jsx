@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, ShieldAlert, Clock, Plus, File, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [recentDocs, setRecentDocs] = useState([]);
 
-  const recentDocs = [
-    { id: 1, name: 'Office_Lease_Agreement_2026.pdf', type: 'Rent Agreement', date: 'April 10, 2026', status: 'High Risk', score: 45 },
-    { id: 2, name: 'Freelance_Contract_Design.pdf', type: 'Service Contract', date: 'April 8, 2026', status: 'Safe', score: 92 },
-    { id: 3, name: 'NDA_Tech_Startup.pdf', type: 'NDA', date: 'April 5, 2026', status: 'Medium Risk', score: 78 },
-  ];
+  useEffect(() => {
+    const savedHistory = JSON.parse(localStorage.getItem('legalEaseHistory') || '[]');
+    setRecentDocs(savedHistory);
+  }, []);
+
+  const totalAnalyzed = recentDocs.length;
+  const risksDetected = recentDocs.filter(doc => doc.score < 80).length;
+  const hoursSaved = (recentDocs.length * 1.5).toFixed(1);
 
   return (
     <div className="min-h-[80vh] py-10 px-4 sm:px-6 lg:px-8 bg-background animate-fade-in">
@@ -36,7 +40,7 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Analyzed</p>
-              <p className="text-3xl font-extrabold text-gray-900 mt-1">12</p>
+              <p className="text-3xl font-extrabold text-gray-900 mt-1">{totalAnalyzed}</p>
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center gap-5 hover:shadow-md transition-shadow">
@@ -45,7 +49,7 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Risks Detected</p>
-              <p className="text-3xl font-extrabold text-gray-900 mt-1">34</p>
+              <p className="text-3xl font-extrabold text-gray-900 mt-1">{risksDetected}</p>
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center gap-5 hover:shadow-md transition-shadow">
@@ -54,7 +58,7 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Hours Saved</p>
-              <p className="text-3xl font-extrabold text-gray-900 mt-1">8.5</p>
+              <p className="text-3xl font-extrabold text-gray-900 mt-1">{hoursSaved}</p>
             </div>
           </div>
         </div>
@@ -75,35 +79,43 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {recentDocs.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-gray-50/80 transition-colors">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <File className="w-5 h-5 text-gray-400" />
-                        <span className="font-medium text-gray-900">{doc.name}</span>
-                      </div>
-                    </td>
-                    <td className="p-4 text-gray-600">{doc.type}</td>
-                    <td className="p-4 text-gray-500 text-sm">{doc.date}</td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        {doc.score >= 80 ? (
-                          <CheckCircle className="w-5 h-5 text-green-500" />
-                        ) : (
-                          <AlertTriangle className={`w-5 h-5 ${doc.score <= 50 ? 'text-red-500' : 'text-yellow-500'}`} />
-                        )}
-                        <span className={`font-bold ${doc.score >= 80 ? 'text-green-700' : doc.score <= 50 ? 'text-red-700' : 'text-yellow-700'}`}>
-                          {doc.score}/100
-                        </span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <button className="text-primary hover:text-primary-dark font-medium text-sm transition-colors">
-                        View Report
-                      </button>
+                {recentDocs.length > 0 ? (
+                  recentDocs.map((doc) => (
+                    <tr key={doc.id} className="hover:bg-gray-50/80 transition-colors">
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <File className="w-5 h-5 text-gray-400" />
+                          <span className="font-medium text-gray-900">{doc.name}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-gray-600">{doc.type}</td>
+                      <td className="p-4 text-gray-500 text-sm">{doc.date}</td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          {doc.score >= 80 ? (
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                          ) : (
+                            <AlertTriangle className={`w-5 h-5 ${doc.score <= 50 ? 'text-red-500' : 'text-yellow-500'}`} />
+                          )}
+                          <span className={`font-bold ${doc.score >= 80 ? 'text-green-700' : doc.score <= 50 ? 'text-red-700' : 'text-yellow-700'}`}>
+                            {doc.score}/100
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <button className="text-primary hover:text-primary-dark font-medium text-sm transition-colors">
+                          View Report
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="p-8 text-center text-gray-500 italic">
+                      No documents analyzed yet. Click "Analyze New Document" to get started.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
