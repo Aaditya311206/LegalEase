@@ -6,7 +6,6 @@ const path = require('path');
 const fs = require('fs'); 
 const axios = require('axios'); 
 const pdfParse = require('pdf-parse'); 
-// 🚨 Notice we deleted the GoogleGenerativeAI import. We don't need it anymore.
 const fetchPolicies = require('./scraper');
 
 const app = express();
@@ -15,18 +14,20 @@ const PORT = 5000;
 app.use(cors()); 
 app.use(express.json()); 
 
+// 📁 DIRECTORY CREATOR
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
+// 📁 MULTER UPLOAD CONFIG
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({ storage: storage });
 
-// 🚀 THE CORE AI ROUTE
+// 🚀 THE CORE AI ROUTE (GOVERNMENT COMPLIANCE MODE)
 app.post('/api/analyze', upload.single('document'), async (req, res) => {
   try {
     const file = req.file;
@@ -41,14 +42,14 @@ app.post('/api/analyze', upload.single('document'), async (req, res) => {
     const pdfData = await pdfParse(dataBuffer);
     const extractedText = pdfData.text;
 
-    // 2. Set up the STRICT CLAUSE ONLY Gemini Prompt
+    // 2. Set up the POLICY & COMPLIANCE Gemini Prompt
     const prompt = `
-      You are an expert legal AI assistant. You are analyzing a ${docType}.
-      Your ONLY job is to extract risky, notable, or unfair clauses.
+      You are an expert government compliance and legal AI assistant. You are analyzing a ${docType}.
+      Your ONLY job is to extract risky, notable, or unfair clauses and analyze them strictly against standard government policies, statutory laws, and consumer rights.
       
       Return ONLY a valid JSON object with the following exact structure. Do not include markdown formatting.
       {
-        "score": <number between 0 and 100 representing safety>,
+        "score": <number between 0 and 100 representing legal compliance and safety>,
         "scoreColor": "<if score < 50 use 'text-red-500', if 50-79 use 'text-yellow-500', if 80+ use 'text-green-500'>",
         "clauses": [
           {
@@ -57,7 +58,9 @@ app.post('/api/analyze', upload.single('document'), async (req, res) => {
             "bgColor": "<bg-red-50 or bg-yellow-50>",
             "borderColor": "<border-red-200 or border-yellow-200>",
             "text": "<The exact text extracted from the document>",
-            "suggestion": "<Your detailed legal recommendation on how the user should fix this specific clause>"
+            "suggestion": "<Strictly explain which government policy, act, or legal standard this clause violates or involves. Explain the legal reality, not just negotiation advice.>",
+            "relevantLawTitle": "<The exact name of the law or section violated, e.g., 'Section 27, Indian Contract Act'>",
+            "relevantLawLink": "<Provide a valid Google search URL to research this specific law, e.g., 'https://www.google.com/search?q=Section+27+Indian+Contract+Act+1872'>"
           }
         ]
       }
@@ -95,6 +98,7 @@ app.post('/api/analyze', upload.single('document'), async (req, res) => {
     res.status(500).json({ error: 'Server error during AI analysis' });
   }
 });
+
 // 📜 POLICIES ROUTE: Fetch Government Policies via Scraper
 app.get('/api/policies', async (req, res) => {
   try {
@@ -108,4 +112,5 @@ app.get('/api/policies', async (req, res) => {
     res.status(500).json({ error: "Failed to fetch policies" });
   }
 });
+
 app.listen(PORT, () => console.log(`🚀 LegalEase Backend running on port ${PORT}`));
