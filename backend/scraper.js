@@ -22,7 +22,7 @@ async function fetchPolicies() {
       }
     });
 
-    return policies.slice(0, 10);
+    return policies;
 
   } catch (err) {
     console.error("Scraping error:", err);
