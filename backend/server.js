@@ -3,7 +3,8 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs'); 
-const axios = require('axios'); // 🆕 Added Axios to communicate with Google
+const axios = require('axios'); 
+const fetchPolicies = require('./scraper'); // 🆕 Imported your scraper!
 
 // Initialize the Express App
 const app = express();
@@ -66,7 +67,6 @@ app.post('/api/auth/google', async (req, res) => {
       return res.status(400).json({ error: "No access token provided" });
     }
 
-    // Ask Google for the user's secure profile data using the token
     const googleResponse = await axios.get(
       'https://www.googleapis.com/oauth2/v3/userinfo',
       { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -78,7 +78,6 @@ app.post('/api/auth/google', async (req, res) => {
     console.log(`Name: ${userProfile.name}`);
     console.log(`Email: ${userProfile.email}`);
 
-    // Send the success data back to React
     res.json({
       message: "Successfully authenticated with Google",
       name: userProfile.name,
@@ -89,6 +88,22 @@ app.post('/api/auth/google', async (req, res) => {
   } catch (error) {
     console.error("Google Auth Error:", error.message);
     res.status(500).json({ error: "Failed to authenticate with Google" });
+  }
+});
+
+
+// 📜 NEW ROUTE: Fetch Government Policies via Scraper
+app.get('/api/policies', async (req, res) => {
+  try {
+    console.log(`\n[📜 SCRAPER] React requested policies... scraping PRS India...`);
+    const policies = await fetchPolicies();
+    
+    // Send the scraped array of policies back to the React frontend
+    res.json(policies);
+    console.log(`[📜 SCRAPER] Successfully sent ${policies.length} policies to frontend.`);
+  } catch (error) {
+    console.error("Error fetching policies:", error);
+    res.status(500).json({ error: "Failed to fetch policies" });
   }
 });
 
