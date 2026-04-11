@@ -2,22 +2,30 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs'); 
+const axios = require('axios'); // 🆕 Added Axios to communicate with Google
 
 // Initialize the Express App
 const app = express();
 const PORT = 5000;
 
 // Middleware
-app.use(cors()); // Allows your React frontend to communicate with this backend
+app.use(cors()); 
 app.use(express.json()); 
+
+// 📁 BULLETPROOF DIRECTORY CREATOR
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+  console.log(`[📁] Created uploads directory at ${uploadDir}`);
+}
 
 // 📁 Configure Multer (The File Catcher)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Saves files into the uploads folder you just created
+    cb(null, uploadDir); 
   },
   filename: (req, file, cb) => {
-    // Renames the file to have a unique timestamp so files don't overwrite each other
     cb(null, Date.now() + path.extname(file.originalname));
   }
 });
@@ -33,11 +41,9 @@ app.post('/api/analyze', upload.single('document'), (req, res) => {
       return res.status(400).json({ error: 'No document uploaded' });
     }
 
-    // Log it to the terminal so you can see it working
     console.log(`\n[🤖 AI ENGINE] Incoming Request!`);
     console.log(`[📁 Saved As]: ${file.filename}`);
 
-    // Send a success message back to React
     res.json({
       message: 'File successfully received by LegalEase Backend!',
       fileName: file.originalname,
@@ -47,6 +53,42 @@ app.post('/api/analyze', upload.single('document'), (req, res) => {
   } catch (error) {
     console.error("Analysis Error:", error);
     res.status(500).json({ error: 'Server error during upload' });
+  }
+});
+
+
+// 🔐 NEW ROUTE: Verify Google Authentication
+app.post('/api/auth/google', async (req, res) => {
+  try {
+    const { accessToken } = req.body;
+
+    if (!accessToken) {
+      return res.status(400).json({ error: "No access token provided" });
+    }
+
+    // Ask Google for the user's secure profile data using the token
+    const googleResponse = await axios.get(
+      'https://www.googleapis.com/oauth2/v3/userinfo',
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+
+    const userProfile = googleResponse.data;
+    
+    console.log(`\n[🔐 AUTH] New Google Login!`);
+    console.log(`Name: ${userProfile.name}`);
+    console.log(`Email: ${userProfile.email}`);
+
+    // Send the success data back to React
+    res.json({
+      message: "Successfully authenticated with Google",
+      name: userProfile.name,
+      email: userProfile.email,
+      picture: userProfile.picture
+    });
+
+  } catch (error) {
+    console.error("Google Auth Error:", error.message);
+    res.status(500).json({ error: "Failed to authenticate with Google" });
   }
 });
 
