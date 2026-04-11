@@ -3,15 +3,14 @@ import { useDropzone } from 'react-dropzone';
 import { UploadCloud, AlertCircle, FileSignature } from 'lucide-react';
 
 export default function DocumentUploader({ onFileUpload }) {
-  // 1. Start empty so nothing is pre-selected!
-  const [docType, setDocType] = useState('');
+  // 1. 🆕 Use 'default' instead of an empty string to force browser compliance
+  const [docType, setDocType] = useState('default');
   
-  // 2. State to show the warning if they forget
   const [showWarning, setShowWarning] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
-    // 3. Block the upload if they haven't picked a type
-    if (!docType) {
+    // 2. 🆕 Update the logic to check for our 'default' string
+    if (docType === 'default') {
       setShowWarning(true);
       return;
     }
@@ -46,14 +45,14 @@ export default function DocumentUploader({ onFileUpload }) {
           value={docType}
           onChange={(e) => {
             setDocType(e.target.value);
-            setShowWarning(false); // Hide warning once they pick something
+            setShowWarning(false); 
           }}
           className={`w-full p-3 bg-white border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-gray-700 font-medium cursor-pointer ${
             showWarning ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
         >
-          {/* 🆕 The new default placeholder option */}
-          <option value="" disabled>-- Please select a document type --</option>
+          {/* 3. 🆕 Explicitly bind this option to 'default' */}
+          <option value="default" disabled>-- Please select a document type --</option>
 
           {/* Property */}
           <option disabled>──────── Property & Rental ────────</option>
@@ -86,7 +85,7 @@ export default function DocumentUploader({ onFileUpload }) {
           <option value="Other">Other</option>
         </select>
 
-        {/* 🆕 Warning Message if they try to drop too early */}
+        {/* Warning Message */}
         {showWarning && (
           <p className="text-red-500 text-sm mt-2 font-medium flex items-center gap-1 animate-fade-in">
             <AlertCircle className="w-4 h-4" />
@@ -99,22 +98,21 @@ export default function DocumentUploader({ onFileUpload }) {
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-200 ease-in-out
-          ${!docType ? 'cursor-not-allowed opacity-60 bg-gray-50 border-gray-200' : 'cursor-pointer hover:bg-gray-50 hover:border-primary-light'}
-          ${isDragActive && docType ? 'border-primary bg-red-50' : ''}
+          ${docType === 'default' ? 'cursor-not-allowed opacity-60 bg-gray-50 border-gray-200' : 'cursor-pointer hover:bg-gray-50 hover:border-primary-light'}
+          ${isDragActive && docType !== 'default' ? 'border-primary bg-red-50' : ''}
           ${(isDragReject || showWarning) ? 'border-red-500 bg-red-50' : 'border-gray-300'}
         `}
       >
-        {/* Disable the actual hidden input if no type is selected */}
-        <input {...getInputProps()} disabled={!docType} />
+        <input {...getInputProps()} disabled={docType === 'default'} />
 
         <div className="flex flex-col items-center justify-center space-y-4">
-          <div className={`p-4 rounded-full ${isDragActive && docType ? 'bg-primary-light text-white' : 'bg-gray-100 text-gray-500'}`}>
+          <div className={`p-4 rounded-full ${isDragActive && docType !== 'default' ? 'bg-primary-light text-white' : 'bg-gray-100 text-gray-500'}`}>
             <UploadCloud className="w-10 h-10" />
           </div>
 
           <div>
             <p className="text-lg font-semibold text-gray-700">
-              {!docType 
+              {docType === 'default'
                 ? "Select a document type to enable upload" 
                 : isDragActive 
                 ? "Drop the document here..." 
@@ -126,9 +124,9 @@ export default function DocumentUploader({ onFileUpload }) {
           </div>
 
           <button 
-            disabled={!docType}
+            disabled={docType === 'default'}
             className={`mt-4 px-6 py-2 border rounded-lg shadow-sm font-medium transition-colors ${
-              !docType 
+              docType === 'default'
                 ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
                 : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-primary'
             }`}

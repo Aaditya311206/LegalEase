@@ -5,31 +5,34 @@ import { FileSearch, Loader2 } from 'lucide-react';
 
 export default function DocumentChecker() {
   const [file, setFile] = useState(null);
+  // 1. 🆕 Added state to catch the document type from the uploader
+  const [docType, setDocType] = useState(''); 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
 
-  const handleFileUpload = (uploadedFile) => {
+  // 2. 🆕 Updated to catch BOTH the file and the selected type
+  const handleFileUpload = (uploadedFile, selectedDocType) => {
     setFile(uploadedFile);
+    setDocType(selectedDocType); 
   };
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
     
-    // 1. Pack the file into a FormData object so it can be sent over HTTP
     const formData = new FormData();
     formData.append('document', file);
+    // 3. 🆕 Send the document type to the backend for later AI use
+    formData.append('docType', docType); 
 
     try {
-      // 2. Send it to your Node.js backend!
       const response = await fetch('http://localhost:5000/api/analyze', {
         method: 'POST',
         body: formData,
       });
 
       const data = await response.json();
-      console.log("Backend says:", data); // Check your browser console to see this!
+      console.log("Backend says:", data); 
 
-      // 3. Move to the results screen
       setIsAnalyzing(false);
       setAnalysisComplete(true);
     } catch (error) {
@@ -40,6 +43,7 @@ export default function DocumentChecker() {
 
   const handleReset = () => {
     setFile(null);
+    setDocType(''); // Clear it on reset
     setAnalysisComplete(false);
   };
 
@@ -47,7 +51,7 @@ export default function DocumentChecker() {
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         
-        {/* Header Section (Hide when analysis is complete) */}
+        {/* Header Section */}
         {!analysisComplete && (
           <div className="text-center mb-10">
             <FileSearch className="w-12 h-12 text-primary mx-auto mb-4" />
@@ -69,6 +73,8 @@ export default function DocumentChecker() {
         {file && !isAnalyzing && !analysisComplete && (
           <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center animate-fade-in">
             <h3 className="text-xl font-semibold text-gray-800">File Selected: {file.name}</h3>
+            {/* 🆕 Show the user what type they selected */}
+            <p className="text-primary font-medium mt-1">Type: {docType}</p> 
             <p className="text-gray-500 mt-2">Size: {(file.size / 1024 / 1024).toFixed(2)} MB</p>
             
             <div className="mt-6 flex justify-center space-x-4">
@@ -99,7 +105,8 @@ export default function DocumentChecker() {
 
         {/* State 4: Results Dashboard */}
         {analysisComplete && (
-          <AnalysisResults file={file} onReset={handleReset} />
+          // 4. 🆕 Passed docType down into AnalysisResults!
+          <AnalysisResults file={file} docType={docType} onReset={handleReset} />
         )}
 
       </div>

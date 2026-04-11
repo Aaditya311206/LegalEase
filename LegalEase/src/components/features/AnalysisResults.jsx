@@ -1,100 +1,140 @@
-import React from 'react';
-import { AlertTriangle, CheckCircle, Info, ShieldAlert } from 'lucide-react';
-import ChatBox from './ChatBox'; // <-- We imported the chatbox!
+import React, { useState } from 'react';
+import { ShieldAlert, AlertTriangle, Info, Bot, Send, ArrowLeft } from 'lucide-react';
 
-export default function AnalysisResults({ file, onReset }) {
-  const mockResults = {
-    score: 45,
-    summary: "This rent agreement heavily favors the landlord. Several standard tenant protections are missing, and penalty clauses are unusually high.",
-    clauses: [
-      {
-        id: 1, type: 'high', title: "Unfair Penalty Clause",
-        text: "Tenant must pay 3 months rent as penalty if notice is less than 60 days.",
-        suggestion: "Standard legal practice caps this at 1 month. Renegotiate this term."
-      },
-      {
-        id: 2, type: 'medium', title: "Missing Maintenance Terms",
-        text: "No clause specifying who handles major structural repairs.",
-        suggestion: "Ensure a clause is added stating the landlord is responsible."
-      }
-    ]
-  };
+export default function AnalysisResults({ file, docType = "Document", onReset }) {
+  const [chatInput, setChatInput] = useState('');
 
-  const getRiskStyles = (type) => {
-    switch(type) {
-      case 'high': return 'bg-red-50 border-red-200 text-red-800';
-      case 'medium': return 'bg-yellow-50 border-yellow-200 text-yellow-800';
-      case 'safe': return 'bg-green-50 border-green-200 text-green-800';
-      default: return 'bg-gray-50 border-gray-200 text-gray-800';
+  // 🧠 DYNAMIC MOCK DATA ENGINE
+  // This changes the UI completely based on what the user selected in the dropdown!
+  const getAnalysisData = (type) => {
+    if (type.includes("NDA") || type.includes("Non-Disclosure")) {
+      return {
+        score: 72,
+        scoreColor: "text-yellow-500",
+        summary: "This Non-Disclosure Agreement is relatively standard, but contains overly broad definitions of 'Confidential Information' and lacks a clear expiration date.",
+        clauses: [
+          { icon: <AlertTriangle className="text-yellow-500 w-5 h-5"/>, titleColor: "text-yellow-800", bgColor: "bg-yellow-50", borderColor: "border-yellow-200", title: "Missing Term Limit", text: "No expiration date specified for the confidentiality obligations.", suggestion: "Standard NDAs usually expire after 2 to 5 years. Add a clear termination clause." },
+          { icon: <ShieldAlert className="text-red-500 w-5 h-5"/>, titleColor: "text-red-800", bgColor: "bg-red-50", borderColor: "border-red-200", title: "Overly Broad Scope", text: "\"Confidential Information includes any and all data shared during conversations.\"", suggestion: "Restrict this to information explicitly marked as 'Confidential' in writing." }
+        ]
+      };
+    } else if (type.includes("Employment")) {
+      return {
+        score: 65,
+        scoreColor: "text-yellow-500",
+        summary: "This Employment Contract is mostly standard but contains a strict non-compete clause that may not be legally enforceable in your jurisdiction.",
+        clauses: [
+          { icon: <ShieldAlert className="text-red-500 w-5 h-5"/>, titleColor: "text-red-800", bgColor: "bg-red-50", borderColor: "border-red-200", title: "Aggressive Non-Compete", text: "\"Employee may not work for any competitor globally for 5 years.\"", suggestion: "Courts rarely enforce 5-year global bans. Negotiate down to 1 year within a 50-mile radius." }
+        ]
+      };
+    } else {
+      // Default (Rent Agreement)
+      return {
+        score: 45,
+        scoreColor: "text-red-500",
+        summary: "This rent agreement heavily favors the landlord. Several standard tenant protections are missing, and penalty clauses are unusually high.",
+        clauses: [
+          { icon: <ShieldAlert className="text-red-500 w-5 h-5"/>, titleColor: "text-red-800", bgColor: "bg-red-50", borderColor: "border-red-200", title: "Unfair Penalty Clause", text: "\"Tenant must pay 3 months rent as penalty if notice is less than 60 days.\"", suggestion: "Standard legal practice caps this at 1 month. Renegotiate this term." },
+          { icon: <Info className="text-yellow-600 w-5 h-5"/>, titleColor: "text-yellow-800", bgColor: "bg-yellow-50", borderColor: "border-yellow-200", title: "Missing Maintenance Terms", text: "\"No clause specifying who handles major structural repairs.\"", suggestion: "Ensure a clause is added stating the landlord is responsible." }
+        ]
+      };
     }
   };
 
-  const getRiskIcon = (type) => {
-    switch(type) {
-      case 'high': return <AlertTriangle className="w-5 h-5 text-red-600" />;
-      case 'medium': return <Info className="w-5 h-5 text-yellow-600" />;
-      case 'safe': return <CheckCircle className="w-5 h-5 text-green-600" />;
-      default: return null;
-    }
-  };
+  // Load the correct dummy data for the selected document
+  const data = getAnalysisData(docType);
 
   return (
-    <div className="w-full max-w-6xl mx-auto mt-8 animate-fade-in">
+    <div className="w-full animate-fade-in pb-10">
       
-      {/* Header & Score */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6 flex items-center justify-between">
+      {/* Top Header Row */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Analysis Complete</h2>
-          <p className="text-gray-500 mt-1">File: {file.name}</p>
+          <button onClick={onReset} className="text-gray-400 hover:text-primary flex items-center gap-2 text-sm font-medium mb-3 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Analyze Another Document
+          </button>
+          <h1 className="text-2xl font-extrabold text-gray-900">Analysis Complete</h1>
+          <p className="text-gray-500 mt-1">File: {file?.name || 'document.pdf'} • Type: {docType}</p>
         </div>
-        <div className="flex flex-col items-end">
-          <div className="flex items-center space-x-2">
-            <ShieldAlert className="w-8 h-8 text-red-500" />
-            <span className="text-4xl font-extrabold text-red-500">{mockResults.score}/100</span>
+        
+        <div className="mt-4 md:mt-0 text-right">
+          <div className="flex items-center gap-2 justify-end">
+            <ShieldAlert className={`w-8 h-8 ${data.scoreColor}`} />
+            <span className={`text-4xl font-black tracking-tight ${data.scoreColor}`}>
+              {data.score}/100
+            </span>
           </div>
-          <span className="text-sm font-medium text-gray-500 uppercase tracking-wider mt-1">Safety Score</span>
+          <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Safety Score</p>
         </div>
       </div>
 
-      {/* Grid Layout: Clauses on Left, Chat on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Left Column: Clauses (Takes up 2/3 of the space) */}
+        {/* Left Column: Analysis Results */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-gray-900 text-white p-6 rounded-xl shadow-md">
-            <h3 className="text-lg font-semibold text-primary-light mb-2">AI Summary</h3>
-            <p className="text-gray-300 leading-relaxed">{mockResults.summary}</p>
+          
+          {/* AI Summary Card */}
+          <div className="bg-gray-900 text-white p-6 rounded-xl shadow-sm">
+            <h3 className="font-bold text-lg mb-2">AI Summary</h3>
+            <p className="text-gray-300 leading-relaxed">{data.summary}</p>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Detected Clauses</h3>
-            {mockResults.clauses.map((clause) => (
-              <div key={clause.id} className={`p-5 rounded-lg border ${getRiskStyles(clause.type)}`}>
-                <div className="flex items-start space-x-3">
-                  <div className="mt-0.5">{getRiskIcon(clause.type)}</div>
-                  <div>
-                    <h4 className="font-bold text-lg mb-1">{clause.title}</h4>
-                    <p className="opacity-90 mb-3 text-sm font-medium">"{clause.text}"</p>
-                    <div className="bg-white/60 p-3 rounded-md text-sm border border-white/40">
-                      <strong>AI Suggestion:</strong> {clause.suggestion}
-                    </div>
+          {/* Detected Clauses List */}
+          <div>
+            <h3 className="font-bold text-xl text-gray-900 mb-4">Detected Clauses</h3>
+            <div className="space-y-4">
+              {data.clauses.map((clause, idx) => (
+                <div key={idx} className={`p-5 rounded-xl border ${clause.borderColor} ${clause.bgColor}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    {clause.icon}
+                    <h4 className={`font-bold ${clause.titleColor}`}>{clause.title}</h4>
+                  </div>
+                  <p className="text-gray-700 font-medium mb-4 italic">
+                    {clause.text}
+                  </p>
+                  <div className="bg-white p-3 rounded-lg border border-white/40 text-sm shadow-sm">
+                    <span className="font-bold text-gray-900">AI Suggestion:</span> <span className="text-gray-600">{clause.suggestion}</span>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          
-          <button 
-            onClick={onReset}
-            className="mt-4 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-sm w-full"
-          >
-            Analyze Another Document
-          </button>
         </div>
 
-        {/* Right Column: ChatBox (Takes up 1/3 of the space) */}
-        <div className="lg:col-span-1">
-          <ChatBox />
+        {/* Right Column: AI Chatbot */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col h-[500px] overflow-hidden sticky top-24">
+          <div className="bg-gray-900 p-4 flex items-center gap-3">
+            <Bot className="text-white w-6 h-6" />
+            <div>
+              <h3 className="font-bold text-white text-sm">LegalEase AI Assistant</h3>
+              <p className="text-gray-400 text-xs">Context-aware document chat</p>
+            </div>
+          </div>
+          
+          <div className="flex-1 p-4 bg-gray-50 overflow-y-auto">
+            <div className="flex gap-3 mb-4">
+              <div className="bg-gray-200 p-2 rounded-full h-8 w-8 flex items-center justify-center flex-shrink-0">
+                <Bot className="w-4 h-4 text-gray-600" />
+              </div>
+              <div className="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm text-sm text-gray-700">
+                Hi! I have analyzed your {docType.toLowerCase()}. Ask me anything about the risks, missing clauses, or legal terms!
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-white border-t border-gray-100">
+            <div className="flex gap-2 relative">
+              <input 
+                type="text" 
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Ask about your agreement..." 
+                className="w-full bg-gray-100 border-transparent focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl px-4 py-2 text-sm transition-all"
+              />
+              <button className="bg-primary hover:bg-primary-dark text-white p-2 rounded-xl transition-colors shadow-sm">
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
 
       </div>

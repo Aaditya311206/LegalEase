@@ -30,4 +30,4 @@ async function fetchPolicies() {
   }
 }
 
-module.exports = fetchPolicies;
+module.exports = fetchPolicies; 
