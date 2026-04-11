@@ -1,13 +1,17 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { UploadCloud, AlertCircle } from 'lucide-react';
+import { UploadCloud, AlertCircle, FileSignature } from 'lucide-react';
 
 export default function DocumentUploader({ onFileUpload }) {
+  // State to track the selected document type
+  const [docType, setDocType] = useState('Rent Agreement'); 
+
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length > 0) {
-      onFileUpload(acceptedFiles[0]);
+      // Now we pass BOTH the file and the selected type up to the parent page!
+      onFileUpload(acceptedFiles[0], docType);
     }
-  }, [onFileUpload]);
+  }, [onFileUpload, docType]);
 
   const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
     onDrop,
@@ -21,6 +25,28 @@ export default function DocumentUploader({ onFileUpload }) {
 
   return (
     <div className="w-full max-w-2xl mx-auto mt-10">
+      
+      {/* 🆕 Document Type Dropdown Menu */}
+      <div className="mb-6 animate-fade-in">
+        <label className="block text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+          <FileSignature className="w-4 h-4 text-primary" />
+          Select Document Type
+        </label>
+        <select
+          value={docType}
+          onChange={(e) => setDocType(e.target.value)}
+          className="w-full p-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-700 font-medium cursor-pointer"
+        >
+          <option value="Rent Agreement">Rent Agreement</option>
+          <option value="Non-Disclosure Agreement (NDA)">Non-Disclosure Agreement (NDA)</option>
+          <option value="Employment Contract">Employment Contract</option>
+          <option value="Freelance/Service Contract">Freelance/Service Contract</option>
+          <option value="Property Sale Deed">Property Sale Deed</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      {/* Drag and Drop Zone */}
       <div 
         {...getRootProps()} 
         className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-200 ease-in-out
