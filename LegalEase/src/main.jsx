@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
+import './i18n'; // 🚨 Multilingual dictionary initialized here
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // 🚨 We will get this ID from Google in the next step!

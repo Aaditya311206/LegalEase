@@ -1,14 +1,17 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Scale, Menu, User, LogOut } from 'lucide-react'; // 🆕 Added LogOut icon
+import { Scale, Menu, User, LogOut } from 'lucide-react';
+import LanguageSwitcher from '../common/LanguageSwitcher';
+import { useTranslation } from 'react-i18next'; // 🚨 1. IMPORT TRANSLATION HOOK
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const { t } = useTranslation(); // 🚨 2. INITIALIZE TRANSLATION
   
   // Check if the user is currently logged in
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
 
-  // 🆕 The Logout Function
+  // The Logout Function
   const handleLogout = () => {
     // 1. Clear the fake token from the browser
     localStorage.removeItem('isAuthenticated');
@@ -35,35 +38,46 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-8 items-center">
-            <Link to="/" className="text-gray-600 hover:text-primary transition-colors font-medium">Home</Link>
+            
+            {/* 🚨 3. REPLACED HARDCODED TEXT WITH DICTIONARY VARIABLES */}
+            <Link to="/" className="text-gray-600 hover:text-primary transition-colors font-medium">
+              {t('nav_home')}
+            </Link>
             
             {/* Only show Document Checker link if logged in */}
             {isAuthenticated && (
-              <Link to="/checker" className="text-gray-600 hover:text-primary transition-colors font-medium">Document Checker</Link>
+              <Link to="/checker" className="text-gray-600 hover:text-primary transition-colors font-medium">
+                {t('nav_checker')}
+              </Link>
             )}
             
-            <Link to="/policies" className="text-gray-600 hover:text-primary transition-colors font-medium">Policies</Link>
+            <Link to="/policies" className="text-gray-600 hover:text-primary transition-colors font-medium">
+              {t('nav_policies')}
+            </Link>
             
-            {/* 🆕 Smart Buttons: Show Logout if logged in, Sign In if not */}
+            {/* THE LANGUAGE SWITCHER COMPONENT */}
+            <LanguageSwitcher />
+            
+            {/* Smart Buttons: Show Logout if logged in, Sign In if not */}
             {isAuthenticated ? (
               <div className="flex items-center space-x-6 border-l pl-6 border-gray-200">
                 <Link to="/dashboard" className="text-gray-700 hover:text-primary font-medium transition-colors flex items-center space-x-2">
                   <User className="h-4 w-4" />
-                  <span>Dashboard</span>
+                  <span>{t('nav_dashboard')}</span>
                 </Link>
                 <button 
                   onClick={handleLogout} 
                   className="text-gray-500 hover:text-red-600 font-medium transition-colors flex items-center space-x-1"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
+                  <span>{t('nav_logout')}</span>
                 </button>
               </div>
             ) : (
               <div className="border-l pl-6 border-gray-200">
                 <Link to="/auth" className="bg-primary hover:bg-primary-dark text-white px-5 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center space-x-2">
                   <User className="h-4 w-4" />
-                  <span>Sign In</span>
+                  <span>{t('nav_signin')}</span>
                 </Link>
               </div>
             )}
