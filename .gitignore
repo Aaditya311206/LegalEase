@@ -159,4 +159,4 @@ vite.config.ts.timestamp-*
 .env
 backend/.env
 node_modules
-uploads
+backend/uploads/
