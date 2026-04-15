@@ -25,30 +25,31 @@ export default function Dashboard() {
         <div className="relative max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl font-black text-white tracking-tight">
-              Welcome to your <span className="text-red-500">Dashboard</span>
+              {t('dash_welcome')}
             </h1>
-            <p className="text-slate-400 mt-2 font-medium">Here is an overview of your recent legal analyses.</p>
+            <p className="text-slate-400 mt-2 font-medium">{t('dash_desc')}</p>
           </div>
           <button 
             onClick={() => navigate('/checker')}
-            className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-red-600/20 active:scale-95"
+            className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-red-600/20 active:scale-95 uppercase tracking-widest text-xs"
           >
             <Plus className="w-5 h-5" />
-            Analyze New Document
+            {t('analyze_new')}
           </button>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
-        {/* 📊 STATS GRID: Elevating the cards */}
+        {/* 📊 STATS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          
           {/* Total Analyzed */}
           <div className="group bg-white p-6 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-5 hover:-translate-y-1 transition-all duration-300">
             <div className="bg-red-50 p-4 rounded-xl text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
               <FileText className="w-8 h-8" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Analyzed</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('total_analyzed')}</p>
               <p className="text-3xl font-black text-slate-900 mt-1">{totalAnalyzed}</p>
             </div>
           </div>
@@ -59,7 +60,7 @@ export default function Dashboard() {
               <ShieldAlert className="w-8 h-8" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Risks Detected</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('risks_detected')}</p>
               <p className="text-3xl font-black text-slate-900 mt-1">{risksDetected}</p>
             </div>
           </div>
@@ -70,7 +71,7 @@ export default function Dashboard() {
               <Clock className="w-8 h-8" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Hours Saved</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('hours_saved')}</p>
               <p className="text-3xl font-black text-slate-900 mt-1">{hoursSaved}</p>
             </div>
           </div>
@@ -79,9 +80,9 @@ export default function Dashboard() {
         {/* 📜 RECENT DOCUMENTS TABLE */}
         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-2xl shadow-slate-200/60 overflow-hidden">
           <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-white">
-            <h2 className="text-xl font-black text-slate-900">Recent Documents</h2>
+            <h2 className="text-xl font-black text-slate-900">{t('recent_docs')}</h2>
             <div className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">
-              Latest Activity
+              {t('latest_tag') || 'Latest Activity'}
             </div>
           </div>
           
@@ -89,10 +90,10 @@ export default function Dashboard() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/50 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-50">
-                  <th className="p-6">Document Name</th>
-                  <th className="p-6">Type</th>
-                  <th className="p-6 text-center">Safety Score</th>
-                  <th className="p-6 text-right">Action</th>
+                  <th className="p-6">{t('doc_name')}</th>
+                  <th className="p-6">{t('type')}</th>
+                  <th className="p-6 text-center">{t('safety_score')}</th>
+                  <th className="p-6 text-right">{t('action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -126,7 +127,7 @@ export default function Dashboard() {
                       </td>
                       <td className="p-6 text-right">
                         <button className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 font-bold text-sm transition-colors group/btn">
-                          View Report <ArrowUpRight className="w-4 h-4 group-hover/btn:-translate-y-0.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                          {t('view_report')} <ArrowUpRight className="w-4 h-4 group-hover/btn:-translate-y-0.5 group-hover/btn:translate-x-0.5 transition-transform" />
                         </button>
                       </td>
                     </tr>
@@ -134,7 +135,7 @@ export default function Dashboard() {
                 ) : (
                   <tr>
                     <td colSpan="4" className="p-12 text-center text-slate-400 font-medium italic">
-                      No documents analyzed yet. Start by uploading a contract.
+                      {t('no_docs')}
                     </td>
                   </tr>
                 )}
