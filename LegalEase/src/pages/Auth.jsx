@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // 🚨 IMPORT ADDED: Link
 import { Mail, Lock, ArrowRight, Gavel, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +12,9 @@ export default function Auth() {
   const handleLogin = (e) => {
     e.preventDefault();
     localStorage.setItem('isAuthenticated', 'true');
+    // Ensure we save the email/name so the Navbar isn't hardcoded
+    localStorage.setItem('userName', email.split('@')[0]);
+    localStorage.setItem('userEmail', email);
     navigate('/dashboard');
   };
 
@@ -131,18 +134,25 @@ export default function Auth() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <button type="button" className="flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl hover:bg-white hover:shadow-sm hover:border-slate-300 text-slate-700 transition-all font-bold text-sm bg-white">
+            <button type="button" className="flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl hover:bg-white hover:shadow-sm hover:border-slate-300 text-slate-700 transition-all font-bold text-sm bg-white active:scale-95">
               <img src="https://authjs.dev/img/providers/google.svg" className="w-5 h-5" alt="Google" />
               Google
             </button>
-            <button type="button" className="flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl hover:bg-white hover:shadow-sm hover:border-slate-300 text-slate-700 transition-all font-bold text-sm bg-white">
+            <button type="button" className="flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl hover:bg-white hover:shadow-sm hover:border-slate-300 text-slate-700 transition-all font-bold text-sm bg-white active:scale-95">
               <img src="https://authjs.dev/img/providers/apple.svg" className="w-5 h-5" alt="Apple" />
               Apple
             </button>
           </div>
 
           <p className="text-center mt-10 text-slate-500 text-sm font-medium">
-            {t('no_account')} <span className="text-red-600 font-bold cursor-pointer hover:underline decoration-2">{t('create_account')}</span>
+            {t('no_account')} 
+            {/* 🚨 UPDATED: Changed from span to Link */}
+            <Link 
+              to="/signup" 
+              className="text-red-600 font-bold ml-1 cursor-pointer hover:underline decoration-2"
+            >
+              {t('create_account')}
+            </Link>
           </p>
         </div>
       </div>

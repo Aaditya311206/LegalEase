@@ -1,15 +1,16 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
-import './index.css';
-import './i18n'; // 🚨 Multilingual dictionary initialized here
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+import './i18n' 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-// 🚨 We will get this ID from Google in the next step!
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_GOES_HERE.apps.googleusercontent.com";
+// Safe extraction of the Client ID
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+    {/* The app will only render the Google context if the ID exists */}
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <App />
     </GoogleOAuthProvider>

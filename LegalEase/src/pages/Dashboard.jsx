@@ -42,8 +42,6 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
         {/* 📊 STATS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          
-          {/* Total Analyzed */}
           <div className="group bg-white p-6 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-5 hover:-translate-y-1 transition-all duration-300">
             <div className="bg-red-50 p-4 rounded-xl text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
               <FileText className="w-8 h-8" />
@@ -54,7 +52,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Risks Detected */}
           <div className="group bg-white p-6 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-5 hover:-translate-y-1 transition-all duration-300">
             <div className="bg-orange-50 p-4 rounded-xl text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
               <ShieldAlert className="w-8 h-8" />
@@ -65,7 +62,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Hours Saved */}
           <div className="group bg-white p-6 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-5 hover:-translate-y-1 transition-all duration-300">
             <div className="bg-blue-50 p-4 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
               <Clock className="w-8 h-8" />
@@ -79,10 +75,10 @@ export default function Dashboard() {
 
         {/* 📜 RECENT DOCUMENTS TABLE */}
         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-2xl shadow-slate-200/60 overflow-hidden">
-          <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-white">
+          <div className="p-8 border-b border-slate-50 flex items-center justify-between">
             <h2 className="text-xl font-black text-slate-900">{t('recent_docs')}</h2>
             <div className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">
-              {t('latest_tag') || 'Latest Activity'}
+              {t('latest_tag')}
             </div>
           </div>
           
@@ -92,6 +88,7 @@ export default function Dashboard() {
                 <tr className="bg-slate-50/50 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-50">
                   <th className="p-6">{t('doc_name')}</th>
                   <th className="p-6">{t('type')}</th>
+                  <th className="p-6">{t('date')}</th> {/* ✅ Re-added Date Header */}
                   <th className="p-6 text-center">{t('safety_score')}</th>
                   <th className="p-6 text-right">{t('action')}</th>
                 </tr>
@@ -100,17 +97,22 @@ export default function Dashboard() {
                 {recentDocs.length > 0 ? (
                   recentDocs.map((doc) => (
                     <tr key={doc.id} className="group hover:bg-slate-50/80 transition-all cursor-default">
-                      <td className="p-6">
+                      <td className="p-6 max-w-xs">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-red-600 transition-all">
+                          <div className="w-10 h-10 bg-slate-100 rounded-lg flex flex-shrink-0 items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-red-600 transition-all">
                             <File className="w-5 h-5" />
                           </div>
-                          <span className="font-bold text-slate-700 text-sm group-hover:text-slate-900">{doc.name}</span>
+                          <span className="font-bold text-slate-700 text-sm group-hover:text-slate-900 truncate">{doc.name}</span>
                         </div>
                       </td>
                       <td className="p-6">
-                        <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                        <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold uppercase tracking-wider">
                           {doc.type}
+                        </span>
+                      </td>
+                      <td className="p-6"> {/* ✅ Re-added Date Body Cell */}
+                        <span className="text-xs font-semibold text-slate-500">
+                          {doc.date || new Date().toLocaleDateString()} 
                         </span>
                       </td>
                       <td className="p-6 text-center">
@@ -134,7 +136,7 @@ export default function Dashboard() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" className="p-12 text-center text-slate-400 font-medium italic">
+                    <td colSpan="5" className="p-12 text-center text-slate-400 font-medium italic">
                       {t('no_docs')}
                     </td>
                   </tr>

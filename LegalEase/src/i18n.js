@@ -13,7 +13,7 @@ const resources = {
       "home_desc": "Upload your legal documents and let AI instantly detect risks, missing clauses, and unfair terms before you sign.",
       "home_btn": "Start Analyzing Now",
 
-      // Auth Page
+      // Auth Page & Features
       "auth_title": "Understand your contracts before you sign them.",
       "auth_subtitle": "Welcome back",
       "auth_desc": "Enter your credentials to access your dashboard.",
@@ -44,8 +44,16 @@ const resources = {
       "dash_desc": "Here is an overview of your recent legal analyses.",
       "analyze_new": "Analyze New Document",
       "total_analyzed": "Total Analyzed", "risks_detected": "Risks Detected", "hours_saved": "Hours Saved",
-      "recent_docs": "Recent Documents", "doc_name": "Document Name", "type": "Type", "safety_score": "Safety Score",
-      "view_report": "View Report", "no_docs": "No documents analyzed yet.", "latest_tag": "Latest Activity", "action": "Action"
+      "recent_docs": "Recent Documents", "doc_name": "Document Name", "type": "Type", "date": "Date", "safety_score": "Safety Score",
+      "view_report": "View Report", "no_docs": "No documents analyzed yet.", "latest_tag": "Latest Activity", "action": "Action",
+
+      // Policy Tracker & Pagination
+      "policy_title": "Government Policy Tracker",
+      "policy_sub": "Showing {{count}} total updates from verified sources.",
+      "policy_search": "Search through policies...",
+      "policy_tag": "Policy Update",
+      "view_doc": "View Document",
+      "page": "PAGE", "of": "OF", "no_match": "No policies match your search."
     }
   },
   hi: {
@@ -69,7 +77,10 @@ const resources = {
       "dash_welcome": "आपके डैशबोर्ड में स्वागत है", "dash_desc": "हालिया विश्लेषणों का विवरण।",
       "analyze_new": "नया विश्लेषण", "total_analyzed": "कुल विश्लेषित", "risks_detected": "जोखिम मिले",
       "hours_saved": "घंटे बचाए", "recent_docs": "हाल के दस्तावेज़", "doc_name": "दस्तावेज़ नाम",
-      "type": "प्रकार", "safety_score": "सुरक्षा स्कोर", "view_report": "रिपोर्ट देखें", "no_docs": "कोई दस्तावेज़ नहीं मिला।", "latest_tag": "नवीनतम गतिविधि", "action": "कार्रवाई"
+      "type": "प्रकार", "date": "तारीख", "safety_score": "सुरक्षा स्कोर", "view_report": "रिपोर्ट देखें", "no_docs": "कोई दस्तावेज़ नहीं मिला।", "latest_tag": "नवीनतम गतिविधि", "action": "कार्रवाई",
+      "policy_title": "सरकारी नीति ट्रैकर", "policy_sub": "सत्यापित स्रोतों से कुल {{count}} अपडेट।",
+      "policy_search": "नीतियों में खोजें...", "policy_tag": "नीति अपडेट", "view_doc": "दस्तावेज़ देखें",
+      "page": "पृष्ठ", "of": "का", "no_match": "आपकी खोज से मेल खाने वाली कोई नीति नहीं मिली।"
     }
   },
   ta: {
@@ -93,7 +104,10 @@ const resources = {
       "dash_welcome": "உங்கள் டேஷ்போர்டிற்கு வரவேற்கிறோம்", "dash_desc": "சமீபத்திய பகுப்பாய்வுகளின் கண்ணோட்டம்.",
       "analyze_new": "புதிய பகுப்பாய்வு", "total_analyzed": "மொத்த பகுப்பாய்வு", "risks_detected": "அபாயங்கள்",
       "hours_saved": "சேமிக்கப்பட்ட நேரம்", "recent_docs": "சமீபத்திய ஆவணங்கள்", "doc_name": "ஆவணப் பெயர்",
-      "type": "வகை", "safety_score": "மதிப்பெண்", "view_report": "அறிக்கையைப் பார்", "no_docs": "ஆவணங்கள் எதுவும் இல்லை.", "latest_tag": "சமீபத்திய நடவடிக்கை", "action": "நடவடிக்கை"
+      "type": "வகை", "date": "தேதி", "safety_score": "மதிப்பெண்", "view_report": "அறிக்கையைப் பார்", "no_docs": "ஆவணங்கள் எதுவும் இல்லை.", "latest_tag": "சமீபத்திய நடவடிக்கை", "action": "நடவடிக்கை",
+      "policy_title": "அரசு கொள்கை டிராக்கர்", "policy_sub": "மொத்தம் {{count}} புதுப்பிப்புகள் காட்டப்படுகின்றன.",
+      "policy_search": "கொள்கைகளில் தேடுங்கள்...", "policy_tag": "கொள்கை அப்டேட்", "view_doc": "ஆவணத்தைப் பார்",
+      "page": "பக்கம்", "of": "இல்", "no_match": "தேடலுக்கு ஏற்ற கொள்கைகள் எதுவும் இல்லை."
     }
   },
   te: {
@@ -110,14 +124,17 @@ const resources = {
       "login_btn": "సైన్ ఇన్", "no_account": "ఖాతా లేదా?", "create_account": "ఖాతా సృష్టించండి",
       "app_title": "స్మార్ట్ డాక్యుమెంట్ చెకర్", "upload_desc": "మీ అగ్రిమెంట్‌లను ఇక్కడ అప్‌లోడ్ చేయండి.",
       "select_doc_type": "పత్రం రకాన్ని ఎంచుకోండి", "placeholder_doc_type": "-- రకాన్ని ఎంచుకోండి --",
-      "warn_select_type": "ముందుగా రకాన్ని ఎంచుకోండి", "drop_file": "ఇక్కడ వదలండి!",
+      "warn_select_type": "ముందుగా పత్రం రకాన్ని ఎంచుకోండి", "drop_file": "ఇక్కడ వదలండి!",
       "upload_instruction": "డ్రాగ్ లేదా క్లిక్ చేయండి", "supports_text": "PDF, JPG, PNG (గరిష్టంగా 10MB)", "browse_files": "ఫైల్‌లను వెతకండి",
       "secure_processing": "పత్రాలు సురక్షితంగా విశ్లేషించబడతాయి.", "analyzing_status": "AI విశ్లేషిస్తోంది...",
       "analyze_btn": "విశ్లేషించు", "cancel_btn": "రద్దు చేయి",
       "dash_welcome": "మీ డాష్‌బోర్డ్‌కు స్వాగతం", "dash_desc": "ఇటీవలి విశ్లేషణల అవలోకనం.",
       "analyze_new": "కొత్త విశ్లేషణ", "total_analyzed": "మొత్తం విశ్లేషణ", "risks_detected": "నష్టాలు",
       "hours_saved": "ఆదా చేసిన సమయం", "recent_docs": "ఇటీవలి పత్రాలు", "doc_name": "పత్రం పేరు",
-      "type": "రకం", "safety_score": "స్కోరు", "view_report": "నివేదిక చూడండి", "no_docs": "పత్రాలు ఏవీ లేవు.", "latest_tag": "తాజా యాక్టివిటీ", "action": "చర్య"
+      "type": "రకం", "date": "తేదీ", "safety_score": "స్కోరు", "view_report": "నివేదిక చూడండి", "no_docs": "పత్రాలు ఏవీ లేవు.", "latest_tag": "తాజా యాక్టివిటీ", "action": "చర్య",
+      "policy_title": "ప్రభుత్వ పాలసీ ట్రాకర్", "policy_sub": "మొత్తం {{count}} నవీకరణలు చూపబడుతున్నాయి.",
+      "policy_search": "పాలసీలలో వెతకండి...", "policy_tag": "పాలసీ అప్‌డేట్", "view_doc": "పత్రాన్ని చూడండి",
+      "page": "పేజీ", "of": "లో", "no_match": "శోధనకు సరిపోలే పాలసీలు ఏవీ లేవు."
     }
   },
   mr: {
@@ -141,7 +158,10 @@ const resources = {
       "dash_welcome": "तुमच्या डॅशबोर्डवर स्वागत आहे", "dash_desc": "अलीकडील विश्लेषणाचे विहंगावलोकन.",
       "analyze_new": "नवीन विश्लेषण", "total_analyzed": "एकूण विश्लेषण", "risks_detected": "धोके",
       "hours_saved": "वाचवलेले तास", "recent_docs": "अलीकडील दस्तऐवज", "doc_name": "दस्तऐवजाचे नाव",
-      "type": "प्रकार", "safety_score": "स्कोर", "view_report": "अहवाल पहा", "no_docs": "दस्तऐवज आढळले नाहीत.", "latest_tag": "अलीकडील क्रियाकलाप", "action": "कृती"
+      "type": "प्रकार", "date": "तारीख", "safety_score": "स्कोर", "view_report": "अहवाल पहा", "no_docs": "दस्तऐवज आढळले नाहीत.", "latest_tag": "अलीकडील क्रियाकलाप", "action": "कृती",
+      "policy_title": "सरकारी धोरण ट्रॅकर", "policy_sub": "एकूण {{count}} अपडेट्स दिसत आहेत.",
+      "policy_search": "धोरणांमध्ये शोधा...", "policy_tag": "धोरण अपडेट", "view_doc": "दस्तऐवज पहा",
+      "page": "पृष्ठ", "of": "पैकी", "no_match": "शोधाशी जुळणारे धोरण आढळले नाही."
     }
   }
 };

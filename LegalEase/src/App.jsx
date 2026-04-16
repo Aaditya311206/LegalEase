@@ -1,11 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
-import Home from './pages/Home'; // ✅ IMPORT THE NEW HOME PAGE
+import Home from './pages/Home'; 
 import DocumentChecker from './pages/DocumentChecker'; 
 import PolicyTracker from './pages/PolicyTracker'; 
 import Dashboard from './pages/Dashboard';
 import Auth from './pages/Auth'; 
+import Signup from './pages/Signup'; // 🚨 NEW IMPORT ADDED
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
@@ -21,6 +22,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
+            {/* 🚨 NEW ROUTE ADDED */}
+            <Route path="/signup" element={<Signup />} /> 
             <Route path="/policies" element={<PolicyTracker />} /> 
             
             <Route path="/checker" element={
