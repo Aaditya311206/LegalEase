@@ -29,7 +29,7 @@ export default function Home() {
         
         <div className="relative max-w-7xl mx-auto px-4">
           
-          {/* 🛡️ THE NEW CATCHY BADGE */}
+          {/* 🛡️ THE NEW CATCHY BADGE - REMOVED "AI" */}
           <div className="inline-flex items-center gap-2 px-5 py-2 mb-8 text-xs font-black uppercase tracking-[0.2em] text-red-400 bg-red-400/10 border border-red-400/20 rounded-full shadow-lg shadow-red-900/20 animate-in fade-in slide-in-from-bottom-2 duration-1000">
             <ShieldCheck className="w-4 h-4 fill-current" /> 
             <span>YOUR PERSONAL LEGAL GUARDIAN</span>
@@ -41,7 +41,7 @@ export default function Home() {
           </h1>
           
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-slate-400 mb-12 font-medium leading-relaxed">
-            {t('home_desc')}
+            Upload your legal documents and let our engine instantly detect risks, missing clauses, and unfair terms before you sign.
           </p>
 
           <button 
@@ -59,18 +59,18 @@ export default function Home() {
           {[
             { 
               icon: <ShieldCheck className="w-8 h-8" />, 
-              title: t('auth_feature_1'), 
-              desc: "Identify liability traps, predatory clauses, and hidden legal risks instantly." 
+              title: "Precision Risk Detection", 
+              desc: "Our high-fidelity audit identifies liability traps, predatory clauses, and hidden risks in seconds." 
             },
             { 
               icon: <Gavel className="w-8 h-8" />, 
-              title: t('auth_feature_2'), 
-              desc: "Ensure every document aligns with local laws and standard compliance protocols." 
+              title: "Compliance Verification", 
+              desc: "Ensure every agreement is cross-referenced with regional laws and industry-standard protocols." 
             },
             { 
               icon: <Lock className="w-8 h-8" />, 
-              title: t('auth_feature_3'), 
-              desc: "Privacy is paramount. We auto-purge your documents immediately after analysis." 
+              title: "Zero-Knowledge Privacy", 
+              desc: "Documents are processed in volatile memory and auto-purged immediately after your session." 
             }
           ].map((feat, i) => (
             <div key={i} className="group p-10 bg-white rounded-[3rem] border border-slate-100 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
@@ -94,7 +94,7 @@ export default function Home() {
             <CheckCircle className="w-4 h-4 text-green-500 shadow-sm"/> Bank-Grade Security
           </div>
           <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">
-            <CheckCircle className="w-4 h-4 text-green-500 shadow-sm"/> 99% Analysis Accuracy
+            <CheckCircle className="w-4 h-4 text-green-500 shadow-sm"/> 99% Audit Precision
           </div>
         </div>
       </section>
