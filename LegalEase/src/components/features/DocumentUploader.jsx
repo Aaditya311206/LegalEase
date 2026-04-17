@@ -34,11 +34,11 @@ export default function DocumentUploader({ onFileUpload }) {
   return (
     <div className="w-full max-w-2xl mx-auto mt-10 animate-in fade-in duration-700">
 
-      {/* 📋 Document Type Selection */}
       <div className="mb-6">
         <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
           <FileSignature className="w-4 h-4 text-red-600" />
-          Select Legal Instrument Category
+          {/* ✅ FIXED FOR TRANSLATION */}
+          {t('select_doc_type')}
         </label>
 
         <select
@@ -54,7 +54,8 @@ export default function DocumentUploader({ onFileUpload }) {
           }`}
         >
           <option value="default" disabled>
-            -- Choose the type of document for audit --
+            {/* ✅ FIXED FOR TRANSLATION */}
+            {t('placeholder_doc_type')}
           </option>
 
           <optgroup label="Property & Real Estate">
@@ -91,13 +92,12 @@ export default function DocumentUploader({ onFileUpload }) {
         {showWarning && (
           <p className="text-red-600 text-xs font-bold mt-3 flex items-center gap-1 uppercase tracking-wider">
             <AlertCircle className="w-4 h-4" />
-            Please select a category to enable the secure upload engine
+            {/* ✅ FIXED FOR TRANSLATION */}
+            {t('warn_select_type')}
           </p>
         )}
       </div>
 
-      {/* 🛡️ Secure Upload Area */}
-      {/* ✅ FIXED LINE BELOW: Added ... spread operator */}
       <div
         {...getRootProps()}
         className={`relative border-2 border-dashed rounded-[2rem] p-12 text-center transition-all duration-500
@@ -116,17 +116,19 @@ export default function DocumentUploader({ onFileUpload }) {
         </div>
 
         <h4 className="font-black text-slate-900 uppercase tracking-tight text-lg mb-2">
+          {/* ✅ FIXED FOR TRANSLATION */}
           {docType === 'default'
-            ? "Select Document Type Above"
+            ? t('warn_select_type')
             : isDragActive
-            ? "Release to Upload"
-            : "Ready for Compliance Scan"}
+            ? t('drop_file')
+            : t('analyzing_status').replace('...', '')}
         </h4>
 
         <p className="text-slate-500 font-medium text-sm max-w-xs mx-auto mb-8 leading-relaxed">
+          {/* ✅ FIXED FOR TRANSLATION */}
           {docType === 'default'
-            ? "The upload interface will unlock once a category is selected."
-            : "Drag and drop your file here, or click to browse securely."}
+            ? t('warn_select_type')
+            : t('upload_instruction')}
         </p>
 
         <div className="flex flex-col items-center gap-4">
@@ -135,7 +137,8 @@ export default function DocumentUploader({ onFileUpload }) {
             disabled={docType === 'default'}
             className="px-8 py-3 bg-white border-2 border-slate-100 rounded-2xl text-slate-900 font-black text-xs uppercase tracking-widest hover:border-red-600 hover:text-red-600 transition-all disabled:opacity-0"
           >
-            Browse Secure Files
+            {/* ✅ FIXED FOR TRANSLATION */}
+            {t('browse_files')}
           </button>
           
           <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -145,11 +148,11 @@ export default function DocumentUploader({ onFileUpload }) {
         </div>
       </div>
 
-      {/* 🔐 Privacy Footer */}
       <div className="mt-8 flex items-center justify-center gap-2 text-slate-400">
         <span className="h-px w-8 bg-slate-100"></span>
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] italic">
-          Documents are processed in memory and never stored permanently
+          {/* ✅ FIXED FOR TRANSLATION */}
+          {t('secure_processing')}
         </p>
         <span className="h-px w-8 bg-slate-100"></span>
       </div>

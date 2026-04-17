@@ -40,7 +40,6 @@ export default function DocumentChecker() {
         setAiData(data.analysis);
         setAnalysisComplete(true);
         
-        // Save to History
         const newHistoryItem = {
           id: Date.now(),
           name: file.name,
@@ -51,10 +50,10 @@ export default function DocumentChecker() {
         const existingHistory = JSON.parse(localStorage.getItem('legalEaseHistory') || '[]');
         localStorage.setItem('legalEaseHistory', JSON.stringify([newHistoryItem, ...existingHistory]));
       } else {
-        setServerError(data.details || data.error || "An error occurred during the audit.");
+        setServerError(data.details || data.error || t('server_error', "An error occurred during the audit."));
       }
     } catch (error) {
-      setServerError("Failed to connect to the LegalEase analysis engine. Please ensure the server is active.");
+      setServerError(t('connection_error', "Failed to connect to the LegalEase analysis engine."));
     } finally {
       setIsAnalyzing(false);
     }
@@ -72,28 +71,25 @@ export default function DocumentChecker() {
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-4xl mx-auto">
         
-        {/* 🚀 Header: Professional Rebrand */}
         {!analysisComplete && (
           <div className="text-center mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
             <div className="bg-red-600/10 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
               <FileSearch className="w-10 h-10 text-red-600" />
             </div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Smart Document Checker</h1>
+            {/* ✅ FIXED FOR TRANSLATION */}
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight">{t('app_title')}</h1>
             <p className="mt-4 text-lg text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
-              Upload any legal instrument—from employment contracts to complex NDAs. 
-              Our engine performs a comprehensive multi-point compliance check instantly.
+              {t('upload_desc')}
             </p>
           </div>
         )}
 
-        {/* 1. UPLOAD STATE */}
         {!file && !analysisComplete && (
           <div className="animate-in fade-in zoom-in-95 duration-500">
             <DocumentUploader onFileUpload={handleFileUpload} />
           </div>
         )}
 
-        {/* 2. FILE SELECTED / READY STATE */}
         {file && !isAnalyzing && !analysisComplete && (
           <div className="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 text-center animate-in zoom-in-95 duration-300">
             <div className="mb-6">
@@ -126,25 +122,25 @@ export default function DocumentChecker() {
                 onClick={handleAnalyze} 
                 className="w-full sm:w-auto px-10 py-4 bg-red-600 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all active:scale-95"
               >
-                Start Legal Audit
+                {/* ✅ FIXED FOR TRANSLATION */}
+                {t('analyze_btn')}
               </button>
             </div>
           </div>
         )}
 
-        {/* 3. LOADING / ANALYZING STATE - Removed "AI" and "Thinking" */}
         {isAnalyzing && (
           <div className="bg-white p-20 rounded-[2.5rem] shadow-xl border border-slate-50 text-center flex flex-col items-center justify-center animate-pulse">
             <div className="relative">
                <Loader2 className="w-16 h-16 text-red-600 animate-spin mb-6" />
                <div className="absolute inset-0 bg-red-600/10 blur-2xl -z-10 rounded-full animate-ping"></div>
             </div>
-            <h3 className="text-xl font-black text-slate-900 uppercase tracking-widest">Performing Legal Audit</h3>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] mt-4">Scanning clauses and verifying compliance...</p>
+            {/* ✅ FIXED FOR TRANSLATION */}
+            <h3 className="text-xl font-black text-slate-900 uppercase tracking-widest">{t('analyzing')}</h3>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] mt-4">{t('analyzing_status')}</p>
           </div>
         )}
 
-        {/* 4. RESULTS STATE */}
         {analysisComplete && aiData && (
           <div className="animate-in slide-in-from-bottom-8 duration-700">
             <AnalysisResults 
