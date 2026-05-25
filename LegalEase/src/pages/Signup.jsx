@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, Gavel, CheckCircle2, User, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Gavel, CheckCircle2, User, AlertCircle, ShieldCheck } from 'lucide-react'; // ✅ Fixed: Added ShieldCheck import reference here
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient'; // ✅ Import Supabase bridge
 
