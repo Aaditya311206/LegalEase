@@ -156,6 +156,11 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+node_modules/
+backend/node_modules/
 .env
 backend/.env
-uploads
+uploads/
+backend/uploads/
+dist/
+build/

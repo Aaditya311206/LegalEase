@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, CheckCircle2, User, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Gavel, CheckCircle2, User, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../supabaseClient'; // ✅ Import Supabase bridge
 
 export default function Signup() {
   const { t } = useTranslation();
@@ -9,13 +10,39 @@ export default function Signup() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [serverError, setServerError] = useState(null); // ✅ State to track backend errors
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('userName', name || email.split('@')[0]);
-    localStorage.setItem('userEmail', email);
-    navigate('/dashboard');
+    setServerError(null); // Clear errors before sending request
+
+    try {
+      // 🚀 Send sanitized signup data to Supabase Backend Auth Engine
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(), // ✅ Fixed: Cleans trailing spaces and forces lowercasing
+        password: password,
+        options: {
+          data: {
+            full_name: name, // Securely stores their text name inside metadata profile
+          },
+        },
+      });
+
+      if (error) {
+        setServerError(error.message); // Catch backend errors (e.g., password too short)
+      } else {
+        // Fallback sync to local state matching your Navbar layout session
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userName', name || email.trim().toLowerCase().split('@')[0]);
+        localStorage.setItem('userEmail', email.trim().toLowerCase());
+        
+        // Let the user know an activation link has been dispatched
+        alert(t('signup_success', 'Account registered successfully! Please check your email inbox to verify your account link.'));
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setServerError(t('connection_error', 'Failed to establish connection with the Auth engine server.'));
+    }
   };
 
   return (
@@ -30,12 +57,12 @@ export default function Signup() {
             <div className="bg-red-600 p-2.5 rounded-xl shadow-lg"><ShieldCheck className="w-8 h-8 text-white" /></div>
             <span className="text-2xl font-black text-white uppercase tracking-widest">LegalEase</span>
           </div>
-          <h2 className="text-4xl font-black text-white leading-tight mb-8 text-left">{t('create_account_title')}</h2>
+          <h2 className="text-4xl font-bold text-white leading-tight mb-6">{t('create_account_title', 'Create your account')}</h2>
           <div className="space-y-6">
-            {[t('signup_feat_1'), t('signup_feat_2'), t('signup_feat_3')].map((text, i) => (
-              <div key={i} className="flex items-center gap-4 text-slate-300">
+            {[t('signup_feat_1', 'Access all legal tools'), t('signup_feat_2', 'Verify documents in seconds'), t('signup_feat_3', 'Stay updated on policies')].map((text, i) => (
+              <div key={i} className="flex items-center gap-3 text-slate-300 text-left">
                 <CheckCircle2 className="w-5 h-5 text-red-500 flex-shrink-0" />
-                <span className="font-semibold text-lg tracking-wide">{text}</span>
+                <span className="font-medium">{text}</span>
               </div>
             ))}
           </div>
@@ -51,42 +78,52 @@ export default function Signup() {
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
+      {/* ➡️ RIGHT PANEL */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 text-left">
         <div className="max-w-md w-full">
           <div className="mb-10 text-center lg:text-left">
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight">{t('join_legalease')}</h2>
-            <p className="text-slate-500 mt-2 font-medium">{t('signup_desc')}</p>
+            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('join_legalease', 'Join LegalEase')}</h2>
+            <p className="text-slate-500 mt-2 font-medium">{t('signup_desc', 'Start your professional legal journey today.')}</p>
           </div>
 
           <form onSubmit={handleSignup} className="space-y-5 text-left">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">{t('full_name')}</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 font-sans">{t('full_name', 'Full Name')}</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full pl-12 pr-4 py-4 bg-white border-2 border-slate-100 rounded-2xl text-slate-900 focus:border-red-600 outline-none transition-all shadow-sm" placeholder="John Doe" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">{t('email_label')}</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 font-sans">{t('email_label', 'Email Address')}</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full pl-12 pr-4 py-4 bg-white border-2 border-slate-100 rounded-2xl text-slate-900 focus:border-red-600 outline-none transition-all shadow-sm" placeholder="name@company.com" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">{t('password_label')}</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 font-sans">{t('password_label', 'Password')}</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-12 pr-4 py-4 bg-white border-2 border-slate-100 rounded-2xl text-slate-900 focus:border-red-600 outline-none transition-all shadow-sm" placeholder="••••••••" />
               </div>
             </div>
-            <button type="submit" className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-black py-4 px-4 rounded-2xl transition-all shadow-xl active:scale-[0.98] uppercase tracking-wider text-xs mt-4">
-              {t('register_btn')} <ArrowRight className="w-5 h-5" />
+
+            {/* ✅ DYNAMIC ERROR BANNER IF BACKEND REJECTS INPUT */}
+            {serverError && (
+              <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 flex items-center gap-3 animate-shake">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span className="text-xs font-bold uppercase tracking-wide text-left">{serverError}</span>
+              </div>
+            )}
+
+            <button type="submit" className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-lg active:scale-[0.98] uppercase tracking-wider text-sm mt-4">
+              {t('register_btn', 'Register Account')} <ArrowRight className="w-5 h-5" />
             </button>
           </form>
 
           <p className="text-center mt-10 text-slate-500 text-sm font-medium">
-            {t('already_account')} <Link to="/auth" className="text-red-600 font-black ml-1 hover:underline underline-offset-4">{t('sign_in')}</Link>
+            {t('already_account', 'Already have an account?')} <Link to="/auth" className="text-red-600 font-bold ml-1 hover:underline">{t('login_btn', 'Sign In')}</Link>
           </p>
         </div>
       </div>

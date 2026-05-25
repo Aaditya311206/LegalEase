@@ -1,24 +1,53 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Mail, Lock, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, ArrowRight, CheckCircle2, ShieldCheck, AlertCircle } from 'lucide-react';
+import { supabase } from '../supabaseClient'; // ✅ Import Supabase bridge
 
 export default function Auth() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [serverError, setServerError] = useState(null); // ✅ State to track backend login errors
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('userName', email.split('@')[0]);
-    localStorage.setItem('userEmail', email);
-    navigate('/dashboard');
+    setServerError(null); // Clear previous issues
+
+    try {
+      // 🚀 Authenticate credentials against your Supabase cloud backend
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        setServerError(error.message); // Catch bad credentials or non-existent accounts
+      } else {
+        // Fallback session state data sync for your Navbar component matching layout
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userName', data.user.user_metadata.full_name || email.split('@')[0]);
+        localStorage.setItem('userEmail', email);
+        
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setServerError(t('connection_error', 'Failed to establish connection to the auth database engine.'));
+    }
   };
+
+  // Guardian-themed features mapped to use translation fallbacks safely
+  const guardianFeatures = [
+    t('auth_feature_1', "Precision risk detection engine"),
+    t('auth_feature_2', "Instant clear-language simplification"),
+    t('auth_feature_3', "Bank-grade data encryption & privacy")
+  ];
 
   return (
     <div className="min-h-screen w-full flex bg-white font-sans text-left">
+      
+      {/* ⬅️ LEFT PANEL */}
       <div className="hidden lg:flex lg:w-1/2 bg-slate-900 relative items-center justify-center p-12 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-40">
           <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-red-600 rounded-full blur-[120px]"></div>
@@ -33,8 +62,8 @@ export default function Auth() {
             <span className="text-2xl font-black text-white tracking-widest uppercase">LegalEase</span>
           </div>
 
-          <h2 className="text-4xl font-black text-white leading-tight mb-8 tracking-tight text-left">
-            {t('auth_title')}
+          <h2 className="text-4xl font-black text-white leading-tight mb-8 tracking-tight">
+            {t('auth_title', 'Understand your contracts before you sign them.')}
           </h2>
 
           <div className="space-y-6">
@@ -61,13 +90,19 @@ export default function Auth() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
         <div className="max-w-md w-full">
           <div className="mb-10 text-center lg:text-left">
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight">{t('auth_subtitle')}</h2>
-            <p className="text-slate-500 mt-3 font-medium">{t('auth_desc')}</p>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+              {t('auth_subtitle', 'Welcome back')}
+            </h2>
+            <p className="text-slate-500 mt-3 font-medium">
+              {t('auth_desc', 'Enter your credentials to access your personal legal guardian.')}
+            </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5 text-left">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">{t('email_label')}</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                {t('email_label', 'Email address')}
+              </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full pl-12 pr-4 py-4 bg-white border-2 border-slate-100 rounded-2xl text-slate-900 placeholder-slate-400 focus:border-red-600 outline-none transition-all shadow-sm font-medium" placeholder="name@company.com" />
@@ -76,8 +111,12 @@ export default function Auth() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">{t('password_label')}</label>
-                <button type="button" className="text-xs font-black text-red-600 hover:text-red-700 transition-colors uppercase tracking-widest">{t('forgot_password')}</button>
+                <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">
+                  {t('password_label', 'Password')}
+                </label>
+                <button type="button" className="text-xs font-black text-red-600 hover:text-red-700 transition-colors uppercase tracking-widest">
+                  {t('forgot_password', 'Forgot password?')}
+                </button>
               </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -85,8 +124,19 @@ export default function Auth() {
               </div>
             </div>
 
-            <button type="submit" className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-black py-4 px-4 rounded-2xl transition-all shadow-xl shadow-red-600/20 active:scale-[0.98] uppercase tracking-[0.2em] text-xs mt-4">
-              {t('login_btn')} <ArrowRight className="w-5 h-5" />
+            {/* ✅ DYNAMIC ERROR BANNER FOR INVALID ACCESS REQUESTS */}
+            {serverError && (
+              <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 flex items-center gap-3 animate-shake">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span className="text-xs font-bold uppercase tracking-wide text-left">{serverError}</span>
+              </div>
+            )}
+
+            <button 
+              type="submit"
+              className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-black py-4 px-4 rounded-2xl transition-all shadow-xl shadow-red-600/20 active:scale-[0.98] uppercase tracking-[0.2em] text-xs mt-4"
+            >
+              {t('login_btn', 'Sign In')} <ArrowRight className="w-5 h-5" />
             </button>
           </form>
 

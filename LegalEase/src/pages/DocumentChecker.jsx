@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import DocumentUploader from '../components/features/DocumentUploader';
 import AnalysisResults from '../components/features/AnalysisResults';
+import LegalAssistant from '../components/features/ChatBox';// ✅ Kept LegalAssistant Import
 import { FileSearch, Loader2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../supabaseClient'; // ✅ Imported Supabase Client Bridge
 
 export default function DocumentChecker() {
   const { t, i18n } = useTranslation();
@@ -28,7 +30,7 @@ export default function DocumentChecker() {
     formData.append('docType', docType); 
     formData.append('language', i18n.language);
 
-    try {
+  	try {
       const response = await fetch('http://localhost:5000/api/analyze', {
         method: 'POST',
         body: formData,
@@ -40,6 +42,30 @@ export default function DocumentChecker() {
         setAiData(data.analysis);
         setAnalysisComplete(true);
         
+        // 🚀 1. RETRIEVE USER SESSION OBJECT FROM BACKEND
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // 🚀 2. INSERT COMPLIANCE RESULTS STRAIGHT TO POSTGRES TABLE
+          const { error: dbError } = await supabase
+            .from('audit_history')
+            .insert([
+              {
+                user_id: user.id,
+                document_name: file.name,
+                document_type: docType,
+                safety_score: data.analysis.score
+              }
+            ]);
+
+          if (dbError) {
+            console.error("Failed to sync audit data to backend table:", dbError.message);
+          } else {
+            console.log("Audit history log successfully saved to your Supabase PostgreSQL instance!");
+          }
+        }
+        
+        // Local state sync fallback for dashboard metrics component matching layout tracker
         const newHistoryItem = {
           id: Date.now(),
           name: file.name,
@@ -53,7 +79,7 @@ export default function DocumentChecker() {
         setServerError(data.details || data.error || t('server_error', "An error occurred during the audit."));
       }
     } catch (error) {
-      setServerError(t('connection_error', "Failed to connect to the LegalEase analysis engine."));
+      setServerError(t('connection_error', "Failed to connect to the LegalEase analysis engine. Please ensure the server is active."));
     } finally {
       setIsAnalyzing(false);
     }
@@ -76,10 +102,9 @@ export default function DocumentChecker() {
             <div className="bg-red-600/10 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
               <FileSearch className="w-10 h-10 text-red-600" />
             </div>
-            {/* ✅ FIXED FOR TRANSLATION */}
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">{t('app_title')}</h1>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight">{t('app_title', 'Smart Document Checker')}</h1>
             <p className="mt-4 text-lg text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
-              {t('upload_desc')}
+              {t('upload_desc', 'Upload any legal instrument—from employment contracts to complex NDAs. Our engine performs a comprehensive multi-point compliance check instantly.')}
             </p>
           </div>
         )}
@@ -122,33 +147,43 @@ export default function DocumentChecker() {
                 onClick={handleAnalyze} 
                 className="w-full sm:w-auto px-10 py-4 bg-red-600 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all active:scale-95"
               >
-                {/* ✅ FIXED FOR TRANSLATION */}
-                {t('analyze_btn')}
+                {t('analyze_btn', 'Start Legal Audit')}
               </button>
             </div>
           </div>
         )}
 
+        {/* 3. LOADING / ANALYZING STATE */}
         {isAnalyzing && (
           <div className="bg-white p-20 rounded-[2.5rem] shadow-xl border border-slate-50 text-center flex flex-col items-center justify-center animate-pulse">
             <div className="relative">
                <Loader2 className="w-16 h-16 text-red-600 animate-spin mb-6" />
                <div className="absolute inset-0 bg-red-600/10 blur-2xl -z-10 rounded-full animate-ping"></div>
             </div>
-            {/* ✅ FIXED FOR TRANSLATION */}
-            <h3 className="text-xl font-black text-slate-900 uppercase tracking-widest">{t('analyzing')}</h3>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] mt-4">{t('analyzing_status')}</p>
+            <h3 className="text-xl font-black text-slate-900 uppercase tracking-widest">{t('analyzing', 'Performing Legal Audit')}</h3>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] mt-4">{t('analyzing_status', 'Scanning clauses and verifying compliance...')}</p>
           </div>
         )}
 
+        {/* 4. RESULTS STATE & FLOATING ASSISTANT */}
         {analysisComplete && aiData && (
-          <div className="animate-in slide-in-from-bottom-8 duration-700">
-            <AnalysisResults 
-              file={file} 
-              docType={docType} 
-              data={aiData} 
-              onReset={handleReset} 
-            />
+          <div className="relative">
+            <div className="animate-in slide-in-from-bottom-8 duration-700">
+              <AnalysisResults 
+                file={file} 
+                docType={docType} 
+                data={aiData} 
+                onReset={handleReset} 
+              />
+            </div>
+
+            {/* 🤖 FLOATING ASSISTANT OVERLAY LAYER */}
+            <div className="fixed bottom-6 right-6 z-50">
+              <LegalAssistant 
+                docType={docType} 
+                analysisData={aiData} 
+              />
+            </div>
           </div>
         )}
       </div>
