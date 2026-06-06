@@ -3,7 +3,7 @@ import { ShieldAlert, AlertTriangle, Info, ArrowLeft, Landmark, ExternalLink } f
 import { useTranslation } from 'react-i18next';
 import ChatBox from './ChatBox'; 
 
-export default function AnalysisResults({ file, docType = "Document", data, onReset }) {
+export default function AnalysisResults({ file, docType = "Document", data, onReset, language }) {
   const { t } = useTranslation();
   const [policies, setPolicies] = useState([]);
   const [loadingPolicies, setLoadingPolicies] = useState(true);
@@ -11,7 +11,8 @@ export default function AnalysisResults({ file, docType = "Document", data, onRe
   useEffect(() => {
     const fetchLivePolicies = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/policies');
+        // 🚀 SWAPPED ENDPOINT URL: Now fetching live scraper records directly from your Render cloud container instead of localhost
+        const response = await fetch('https://legalease-zxbe.onrender.com/api/policies');
         const policyData = await response.json();
         setPolicies(policyData);
       } catch (error) {
@@ -195,8 +196,8 @@ export default function AnalysisResults({ file, docType = "Document", data, onRe
           </div>
 
           {/* Context ChatBox Widget */}
-          {/* ✅ Scales wider seamlessly matching the new 2-column parent width constraints */}
-          <ChatBox docType={docType} analysisData={data} />
+          {/* ✅ Scales wider seamlessly matching the new 2-column parent width constraints and tracks system language */}
+          <ChatBox docType={docType} analysisData={data} language={language} />
 
         </div>
       </div>

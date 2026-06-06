@@ -31,7 +31,8 @@ export default function DocumentChecker() {
     formData.append('language', i18n.language);
 
     try {
-      const response = await fetch('http://localhost:5000/api/analyze', {
+      // 🚀 SWAPPED ENDPOINT URL: Pointing directly to your live Render server endpoint instead of localhost
+      const response = await fetch('https://legalease-zxbe.onrender.com/api/analyze', {
         method: 'POST',
         body: formData,
       });
@@ -179,6 +180,8 @@ export default function DocumentChecker() {
               docType={docType} 
               data={aiData} 
               onReset={handleReset} 
+              // ✅ Pass the active language environment configuration forward to maintain tracking state coherence
+              language={i18n.language}
             />
           </div>
         )}

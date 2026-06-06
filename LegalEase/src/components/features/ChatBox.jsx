@@ -52,7 +52,8 @@ export default function ChatBox({ docType, analysisData }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/chat', {
+      // 🚀 SWAPPED ENDPOINT URL: Pointing securely to your live Render server endpoint instead of localhost
+      const response = await fetch('https://legalease-zxbe.onrender.com/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +62,7 @@ export default function ChatBox({ docType, analysisData }) {
           message: userMessage,
           documentContext: analysisData || null,
           docType: docType || 'General Document',
-          language: i18n.language // ✅ FIXED: Sends current language state configuration parameter down to the chat engine prompt processor
+          language: i18n.language // ✅ Sends current language state configuration parameter down to the chat engine prompt processor
         }),
       });
 
