@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, AlertTriangle, Info, Bot, Send, ArrowLeft, Landmark, ExternalLink } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, Info, ArrowLeft, Landmark, ExternalLink } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import ChatBox from './ChatBox'; 
 
 export default function AnalysisResults({ file, docType = "Document", data, onReset }) {
-  const [chatInput, setChatInput] = useState('');
-  
-  // 1. 🚨 NEW STATE: To hold our scraped policies
+  const { t } = useTranslation();
   const [policies, setPolicies] = useState([]);
   const [loadingPolicies, setLoadingPolicies] = useState(true);
 
-  // 2. 🚨 NEW EFFECT: Fetch the policies from your backend when this page loads
   useEffect(() => {
     const fetchLivePolicies = async () => {
       try {
@@ -26,21 +25,34 @@ export default function AnalysisResults({ file, docType = "Document", data, onRe
 
   if (!data) return null;
   const safeClauses = Array.isArray(data.clauses) ? data.clauses : [];
+  
+  // ✅ Safely read the dynamic headers returned by Gemini matching your selection language
+  const headers = data.translatedHeaders || {
+    complianceHeader: "Compliance Analysis Complete",
+    risksHeader: "Detected Legal Risks",
+    issuesFoundLabel: "Issues Found",
+    safetyScoreLabel: "Legal Safety Score",
+    policyAlignmentLabel: "Policy & Law Alignment",
+    verifyAgainstLabel: "Verify against"
+  };
 
   return (
-    <div className="w-full animate-fade-in pb-12">
+    <div className="w-full animate-fade-in pb-12 text-left">
       
       {/* HEADER SECTION */}
       <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
         <div>
-          <button onClick={onReset} className="text-gray-400 hover:text-primary flex items-center gap-2 text-sm font-bold mb-4 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Analyze Another Document
+          <button onClick={onReset} className="text-gray-400 hover:text-red-600 flex items-center gap-2 text-sm font-bold mb-4 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> {t('cancel_btn', 'Analyze Another Document')}
           </button>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Compliance Analysis Complete</h1>
+          {/* ✅ Uses dynamic AI translation header */}
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            {headers.complianceHeader}
+          </h1>
           <div className="flex items-center gap-2 mt-2 text-sm text-gray-500 font-medium">
             <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-700">{file?.name || 'document.pdf'}</span>
             <span>•</span>
-            <span className="text-primary">{docType}</span>
+            <span className="text-red-600 font-bold">{docType}</span>
           </div>
         </div>
         
@@ -51,21 +63,29 @@ export default function AnalysisResults({ file, docType = "Document", data, onRe
               <span className={`text-4xl font-black tracking-tighter leading-none ${data.scoreColor || 'text-gray-500'}`}>
                 {data.score || 0}<span className="text-2xl text-gray-300">/100</span>
               </span>
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Legal Safety Score</span>
+              {/* ✅ Uses dynamic AI translation label */}
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">
+                {headers.safetyScoreLabel}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       {/* MAIN CONTENT GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* 🚀 UPGRADED: Changed grid mapping structure to a 5-column system grid layout framework to drop empty workspace margins */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
         
-        {/* LEFT COLUMN: Clauses */}
-        <div className="lg:col-span-2">
+        {/* LEFT COLUMN: Detected Legal Risks (Takes up 3 wide grid paths - 60% view layout) */}
+        <div className="lg:col-span-3 w-full">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-extrabold text-2xl text-gray-900 tracking-tight">Detected Legal Risks</h3>
+            {/* ✅ Uses dynamic AI translation header */}
+            <h3 className="font-extrabold text-2xl text-gray-900 tracking-tight">
+              {headers.risksHeader}
+            </h3>
+            {/* ✅ Uses dynamic AI translation label */}
             <span className="text-sm font-medium text-gray-500 bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm">
-              {safeClauses.length} Issues Found
+              {safeClauses.length} {headers.issuesFoundLabel}
             </span>
           </div>
           
@@ -83,6 +103,7 @@ export default function AnalysisResults({ file, docType = "Document", data, onRe
                         <Info className="text-blue-500 w-6 h-6" />
                       )}
                     </div>
+                    {/* ✅ Renders the translated clause title smoothly */}
                     <h4 className={`font-bold text-lg ${clause.titleColor || 'text-gray-900'}`}>{clause.title || 'Notable Clause'}</h4>
                   </div>
                   
@@ -93,28 +114,32 @@ export default function AnalysisResults({ file, docType = "Document", data, onRe
                       <span className="absolute -right-4 bottom-0 text-gray-300 text-xl font-serif">"</span>
                     </p>
                     
-                    {/* 🚨 UPDATED CONTAINER: Now flex-col so the button stacks under the text */}
                     <div className={`p-4 rounded-xl text-sm border flex flex-col gap-3 ${clause.bgColor || 'bg-gray-50'} ${clause.borderColor || 'border-gray-200'} bg-opacity-40`}>
                       
                       <div className="flex gap-3">
                         <Landmark className={`w-5 h-5 flex-shrink-0 mt-0.5 ${clause.titleColor || 'text-gray-700'}`} />
                         <div>
-                          <span className={`font-bold block mb-1 ${clause.titleColor || 'text-gray-900'}`}>Policy & Law Alignment</span>
+                          {/* ✅ Uses dynamic AI translation label */}
+                          <span className={`font-bold block mb-1 ${clause.titleColor || 'text-gray-900'}`}>
+                            {headers.policyAlignmentLabel}
+                          </span>
+                          {/* ✅ Renders the translated suggestion insights */}
                           <span className="text-gray-700 leading-relaxed">{clause.suggestion || 'No specific suggestion provided.'}</span>
                         </div>
                       </div>
 
-                      {/* 🚨 NEW: The Relevant Law Link Button directly under the explanation! */}
+                      {/* Relevant Law Link Button directly under explanation */}
                       {clause.relevantLawLink && clause.relevantLawTitle && (
                         <div className="ml-8 mt-2">
                           <a 
                             href={clause.relevantLawLink} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm text-primary hover:bg-gray-50 transition-colors font-semibold text-xs"
+                            className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm text-red-600 hover:bg-gray-50 transition-colors font-bold text-xs uppercase tracking-wider"
                           >
-                            <ExternalLink className="w-4 h-4" />
-                            Verify against: {clause.relevantLawTitle}
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            {/* ✅ Uses dynamic AI translation label */}
+                            {headers.verifyAgainstLabel}: {clause.relevantLawTitle}
                           </a>
                         </div>
                       )}
@@ -129,44 +154,23 @@ export default function AnalysisResults({ file, docType = "Document", data, onRe
           </div>
         </div>
 
-        {/* RIGHT COLUMN: AI Chatbot & Scraped Policies */}
-        <div className="flex flex-col gap-8">
+        {/* RIGHT COLUMN: Sidebar layout (Takes up 2 wide grid paths - 40% view layout area) */}
+        {/* 🚀 EXPANDED: This provides both layout tracking modules massive container area width transformations */}
+        <div className="lg:col-span-2 flex flex-col gap-6 w-full">
           
-          {/* AI CHATBOT (Kept minimal to make room for policies) */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg flex flex-col h-[400px] overflow-hidden">
-            <div className="bg-gray-900 p-5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Bot className="text-white w-7 h-7" />
-                <div>
-                  <h3 className="font-bold text-white text-sm tracking-wide">LegalAssistant</h3>
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 p-5 bg-[#F8FAFC] overflow-y-auto space-y-4">
-              <div className="flex gap-3">
-                <div className="bg-gray-900 p-2 rounded-full h-8 w-8 flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
-                <div className="bg-white p-4 rounded-2xl rounded-tl-sm border border-gray-200 shadow-sm text-sm text-gray-700 leading-relaxed font-medium">
-                  Hi! I checked your <span className="font-bold text-primary">{docType}</span> against legal standards. Ask me anything about the laws mentioned.
-                </div>
-              </div>
-            </div>
-            <div className="p-4 bg-white border-t border-gray-100 flex gap-2 relative">
-              <input type="text" placeholder="Ask a legal question..." className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none" />
-              <button className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl transition-all"><Send className="w-5 h-5" /></button>
-            </div>
-          </div>
-
           {/* LIVE GOVERNMENT POLICIES FROM SCRAPER */}
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-lg flex flex-col h-[350px] overflow-hidden">
+          <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl flex flex-col h-[400px] overflow-hidden w-full">
             <div className="bg-slate-950 p-5 flex items-center gap-3 border-b border-slate-800">
               <Landmark className="text-emerald-400 w-6 h-6" />
-              <h3 className="font-bold text-white text-sm tracking-wide">Live Policy Updates (PRS India)</h3>
+              <h3 className="font-bold text-white text-sm tracking-wide">
+                {t('live_policy_title', 'Live Policy Updates (PRS India)')}
+              </h3>
             </div>
             <div className="flex-1 p-4 overflow-y-auto space-y-3 custom-scrollbar">
               {loadingPolicies ? (
-                <div className="text-slate-400 text-sm text-center mt-10 animate-pulse">Fetching latest government bills...</div>
+                <div className="text-slate-400 text-sm text-center mt-12 animate-pulse">
+                  {t('fetching_policies', 'Fetching latest government bills...')}
+                </div>
               ) : policies.length > 0 ? (
                 policies.map((policy, idx) => (
                   <a 
@@ -189,6 +193,10 @@ export default function AnalysisResults({ file, docType = "Document", data, onRe
               )}
             </div>
           </div>
+
+          {/* Context ChatBox Widget */}
+          {/* ✅ Scales wider seamlessly matching the new 2-column parent width constraints */}
+          <ChatBox docType={docType} analysisData={data} />
 
         </div>
       </div>

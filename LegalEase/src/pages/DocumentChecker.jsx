@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import DocumentUploader from '../components/features/DocumentUploader';
 import AnalysisResults from '../components/features/AnalysisResults';
-import LegalAssistant from '../components/features/ChatBox';// ✅ Kept LegalAssistant Import
 import { FileSearch, Loader2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient'; // ✅ Imported Supabase Client Bridge
@@ -28,9 +27,10 @@ export default function DocumentChecker() {
     const formData = new FormData();
     formData.append('document', file);
     formData.append('docType', docType); 
+    // ✅ Passed active translation hook string code directly into payload body
     formData.append('language', i18n.language);
 
-  	try {
+    try {
       const response = await fetch('http://localhost:5000/api/analyze', {
         method: 'POST',
         body: formData,
@@ -39,6 +39,9 @@ export default function DocumentChecker() {
       const data = await response.json();
 
       if (data.status === 'success') {
+        // ✅ Instantly drop loading status flags before toggling visual layouts
+        setIsAnalyzing(false); 
+        
         setAiData(data.analysis);
         setAnalysisComplete(true);
         
@@ -76,12 +79,12 @@ export default function DocumentChecker() {
         const existingHistory = JSON.parse(localStorage.getItem('legalEaseHistory') || '[]');
         localStorage.setItem('legalEaseHistory', JSON.stringify([newHistoryItem, ...existingHistory]));
       } else {
+        setIsAnalyzing(false); // Drop loader on data validation errors
         setServerError(data.details || data.error || t('server_error', "An error occurred during the audit."));
       }
     } catch (error) {
+      setIsAnalyzing(false); // Drop loader on general connection drop exceptions
       setServerError(t('connection_error', "Failed to connect to the LegalEase analysis engine. Please ensure the server is active."));
-    } finally {
-      setIsAnalyzing(false);
     }
   };
 
@@ -95,7 +98,8 @@ export default function DocumentChecker() {
 
   return (
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-4xl mx-auto">
+      {/* 🚀 FIXED CONTAINER SIZE: Upgraded from max-w-4xl to max-w-7xl to completely open up full edge-to-edge tracking real estate */}
+      <div className="max-w-7xl mx-auto w-full transition-all duration-300">
         
         {!analysisComplete && (
           <div className="text-center mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
@@ -116,7 +120,7 @@ export default function DocumentChecker() {
         )}
 
         {file && !isAnalyzing && !analysisComplete && (
-          <div className="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 text-center animate-in zoom-in-95 duration-300">
+          <div className="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 text-center animate-in zoom-in-95 duration-300 max-w-3xl mx-auto">
             <div className="mb-6">
               <h3 className="text-xl font-black text-slate-900 truncate px-4">{file.name}</h3>
               <div className="flex items-center justify-center gap-2 mt-2">
@@ -138,12 +142,14 @@ export default function DocumentChecker() {
 
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
               <button 
+                type="button"
                 onClick={handleReset} 
                 className="w-full sm:w-auto px-8 py-4 border-2 border-slate-100 rounded-2xl text-slate-500 font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-50 transition-all active:scale-95"
               >
-                {t('cancel_btn')}
+                {t('cancel_btn', 'Cancel')}
               </button>
               <button 
+                type="button"
                 onClick={handleAnalyze} 
                 className="w-full sm:w-auto px-10 py-4 bg-red-600 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all active:scale-95"
               >
@@ -154,8 +160,8 @@ export default function DocumentChecker() {
         )}
 
         {/* 3. LOADING / ANALYZING STATE */}
-        {isAnalyzing && (
-          <div className="bg-white p-20 rounded-[2.5rem] shadow-xl border border-slate-50 text-center flex flex-col items-center justify-center animate-pulse">
+        {isAnalyzing && !analysisComplete && (
+          <div className="bg-white p-20 rounded-[2.5rem] shadow-xl border border-slate-50 text-center flex flex-col items-center justify-center animate-pulse max-w-3xl mx-auto">
             <div className="relative">
                <Loader2 className="w-16 h-16 text-red-600 animate-spin mb-6" />
                <div className="absolute inset-0 bg-red-600/10 blur-2xl -z-10 rounded-full animate-ping"></div>
@@ -165,25 +171,15 @@ export default function DocumentChecker() {
           </div>
         )}
 
-        {/* 4. RESULTS STATE & FLOATING ASSISTANT */}
+        {/* 4. RESULTS STATE */}
         {analysisComplete && aiData && (
-          <div className="relative">
-            <div className="animate-in slide-in-from-bottom-8 duration-700">
-              <AnalysisResults 
-                file={file} 
-                docType={docType} 
-                data={aiData} 
-                onReset={handleReset} 
-              />
-            </div>
-
-            {/* 🤖 FLOATING ASSISTANT OVERLAY LAYER */}
-            <div className="fixed bottom-6 right-6 z-50">
-              <LegalAssistant 
-                docType={docType} 
-                analysisData={aiData} 
-              />
-            </div>
+          <div className="w-full animate-in slide-in-from-bottom-8 duration-700">
+            <AnalysisResults 
+              file={file} 
+              docType={docType} 
+              data={aiData} 
+              onReset={handleReset} 
+            />
           </div>
         )}
       </div>
