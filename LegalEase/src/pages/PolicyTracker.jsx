@@ -14,7 +14,8 @@ export default function PolicyTracker() {
 
   useEffect(() => {
     setIsLoading(true);
-    fetch("http://localhost:5000/api/policies")
+    // 🚀 FIXED ENDPOINT URL: Swapped out localhost to read records live from your Render production cluster safely
+    fetch("https://legalease-zxbe.onrender.com/api/policies")
       .then((res) => res.json())
       .then((data) => {
         setPolicies(data);
